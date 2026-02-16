@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { bookingsApi } from '@/lib/api';
+import { bookingsApi, paymentApi } from '@/lib/api';
 import { formatCurrency, formatDate, formatTime } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,17 +13,41 @@ import type { Ticket } from '@/types';
 function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
   const bookingRefs = searchParams.get('refs')?.split(',') || [];
+  const sessionId = searchParams.get('session_id');
 
-  const { data: bookings, isLoading } = useQuery({
-    queryKey: ['checkout-bookings', bookingRefs],
+  // If we have a Stripe session_id, fetch the payment status first
+  const { data: paymentStatus, isLoading: isLoadingPayment } = useQuery({
+    queryKey: ['payment-status', sessionId],
     queryFn: async () => {
+      const res = await paymentApi.getStatus(sessionId!);
+      return res.data;
+    },
+    enabled: !!sessionId,
+  });
+
+  // Get booking refs from payment status or URL params
+  const effectiveBookingRefs = paymentStatus?.booking_id 
+    ? [paymentStatus.booking_id.toString()]
+    : bookingRefs;
+
+  const { data: bookings, isLoading: isLoadingBookings } = useQuery({
+    queryKey: ['checkout-bookings', effectiveBookingRefs],
+    queryFn: async () => {
+      // If we have booking IDs from payment status, fetch by ID
+      if (paymentStatus?.booking_id) {
+        const res = await bookingsApi.get(paymentStatus.booking_id);
+        return res.data ? [res.data] : [];
+      }
+      // Otherwise fetch by refs
       const results = await Promise.all(
-        bookingRefs.map(ref => bookingsApi.getByRef(ref).catch(() => null))
+        effectiveBookingRefs.map(ref => bookingsApi.getByRef(ref).catch(() => null))
       );
       return results.filter(r => r?.data).map(r => r!.data);
     },
-    enabled: bookingRefs.length > 0,
+    enabled: effectiveBookingRefs.length > 0 || !!paymentStatus,
   });
+
+  const isLoading = isLoadingPayment || isLoadingBookings;
 
   if (isLoading) {
     return (

@@ -1,6 +1,8 @@
 package router
 
 import (
+	"os"
+	"strings"
 	"time"
 
 	"filmhouse-backend/internal/config"
@@ -16,9 +18,29 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	gin.SetMode(cfg.Server.Mode)
 	r := gin.Default()
 
-	// CORS
+	// CORS - support both local and production origins
+	allowedOrigins := []string{
+		"http://localhost:3000",
+		"http://127.0.0.1:3000",
+	}
+	
+	// Add production origins from environment
+	if prodOrigins := os.Getenv("CORS_ORIGINS"); prodOrigins != "" {
+		for _, origin := range strings.Split(prodOrigins, ",") {
+			allowedOrigins = append(allowedOrigins, strings.TrimSpace(origin))
+		}
+	}
+	
+	// Add Vercel preview URLs pattern
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://127.0.0.1:3000"},
+		AllowOrigins:     allowedOrigins,
+		AllowOriginFunc: func(origin string) bool {
+			// Allow Vercel preview deployments
+			if strings.HasSuffix(origin, ".vercel.app") {
+				return true
+			}
+			return false
+		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

@@ -102,6 +102,20 @@ export const bookingsApi = {
     api.post(`/bookings/${bookingId}/cancel`),
 };
 
+// Payment API
+export const paymentApi = {
+  createCheckoutSession: (bookingId: number, successUrl: string, cancelUrl: string) =>
+    api.post('/payment/create-checkout-session', {
+      booking_id: bookingId,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+    }),
+  demoConfirm: (bookingId: number) =>
+    api.post('/payment/demo-confirm', { booking_id: bookingId }),
+  getStatus: (sessionId: string) =>
+    api.get(`/payment/status/${sessionId}`),
+};
+
 // Halls API
 export const hallsApi = {
   list: () => api.get('/halls'),

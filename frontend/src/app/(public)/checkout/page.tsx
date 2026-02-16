@@ -3,13 +3,19 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
+import { loadStripe } from '@stripe/stripe-js';
 import { useCartStore } from '@/stores/cart';
 import { useAuthStore } from '@/stores/auth';
-import { bookingsApi } from '@/lib/api';
+import { bookingsApi, paymentApi } from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, CreditCard, Check, AlertCircle, Loader2, Trash2, Clock } from 'lucide-react';
+
+// Initialize Stripe
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  : null;
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -19,9 +25,19 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'paynow'>('card');
   const [expiredItems, setExpiredItems] = useState<string[]>([]);
   const [processingError, setProcessingError] = useState<string | null>(null);
+  const [useStripe, setUseStripe] = useState(true);
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
 
   useEffect(() => {
     setHydrated(true);
+  }, []);
+
+  // Update current time for countdown
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   // Check for expired items
@@ -50,7 +66,8 @@ export default function CheckoutPage() {
     }
   }, [hydrated, items.length, isAuthenticated, guestInfo, router]);
 
-  const checkoutMutation = useMutation({
+  // Create booking and redirect to Stripe
+  const stripeCheckoutMutation = useMutation({
     mutationFn: async () => {
       // Group items by screening with ticket type info
       const screeningGroups = items.reduce((acc, item) => {
@@ -59,7 +76,7 @@ export default function CheckoutPage() {
         }
         acc[item.screeningId].push({
           seat_id: item.seatId,
-          ticket_type_id: item.ticketTypeId || 1, // Default to Standard
+          ticket_type_id: item.ticketTypeId || 1,
         });
         return acc;
       }, {} as Record<number, { seat_id: number; ticket_type_id: number }[]>);
@@ -69,7 +86,6 @@ export default function CheckoutPage() {
       for (const [screeningId, tickets] of Object.entries(screeningGroups)) {
         let res;
         if (isAuthenticated) {
-          // Logged in user - use authenticated endpoint (legacy format for now)
           const seatIds = tickets.map(t => t.seat_id);
           res = await bookingsApi.create(
             parseInt(screeningId),
@@ -77,7 +93,79 @@ export default function CheckoutPage() {
             paymentMethod
           );
         } else {
-          // Guest checkout with ticket types
+          res = await bookingsApi.createGuestBooking(
+            parseInt(screeningId),
+            tickets,
+            paymentMethod,
+            guestInfo || undefined
+          );
+        }
+        bookings.push(res.data);
+      }
+
+      // For now, use the first booking for Stripe checkout
+      // In production, you might want to combine multiple bookings
+      const booking = bookings[0];
+      
+      // Create Stripe checkout session
+      const baseUrl = window.location.origin;
+      const successUrl = `${baseUrl}/checkout/success`;
+      const cancelUrl = `${baseUrl}/checkout?cancelled=true`;
+      
+      const sessionRes = await paymentApi.createCheckoutSession(
+        booking.id,
+        successUrl,
+        cancelUrl
+      );
+
+      return { bookings, session: sessionRes.data };
+    },
+    onSuccess: async ({ session }) => {
+      if (session.demo_mode) {
+        // Demo mode - use demo confirm flow
+        setUseStripe(false);
+        return;
+      }
+
+      // Redirect to Stripe Checkout using the URL from backend
+      if (session.checkout_url) {
+        window.location.href = session.checkout_url;
+      } else {
+        setProcessingError('Failed to get checkout URL');
+      }
+    },
+    onError: (err: Error) => {
+      setProcessingError(err.message || 'Failed to create checkout session');
+    },
+  });
+
+  // Demo checkout (fallback when Stripe not configured)
+  const demoCheckoutMutation = useMutation({
+    mutationFn: async () => {
+      // Group items by screening with ticket type info
+      const screeningGroups = items.reduce((acc, item) => {
+        if (!acc[item.screeningId]) {
+          acc[item.screeningId] = [];
+        }
+        acc[item.screeningId].push({
+          seat_id: item.seatId,
+          ticket_type_id: item.ticketTypeId || 1,
+        });
+        return acc;
+      }, {} as Record<number, { seat_id: number; ticket_type_id: number }[]>);
+
+      // Create bookings for each screening
+      const bookings = [];
+      for (const [screeningId, tickets] of Object.entries(screeningGroups)) {
+        let res;
+        if (isAuthenticated) {
+          const seatIds = tickets.map(t => t.seat_id);
+          res = await bookingsApi.create(
+            parseInt(screeningId),
+            seatIds,
+            paymentMethod
+          );
+        } else {
           res = await bookingsApi.createGuestBooking(
             parseInt(screeningId),
             tickets,
@@ -88,11 +176,15 @@ export default function CheckoutPage() {
         bookings.push(res.data);
       }
       
+      // Confirm each booking with demo payment
+      for (const booking of bookings) {
+        await paymentApi.demoConfirm(booking.id);
+      }
+      
       return bookings;
     },
     onSuccess: (bookings) => {
       clearCart();
-      // Redirect to confirmation page with booking refs
       const bookingRefs = bookings.map(b => b.booking_ref).join(',');
       router.push(`/checkout/success?refs=${bookingRefs}`);
     },
@@ -103,11 +195,16 @@ export default function CheckoutPage() {
 
   const handleCheckout = () => {
     setProcessingError(null);
-    checkoutMutation.mutate();
+    
+    if (useStripe && stripePromise) {
+      stripeCheckoutMutation.mutate();
+    } else {
+      demoCheckoutMutation.mutate();
+    }
   };
 
   const getTimeRemaining = (expiresAt: number) => {
-    const remaining = expiresAt - Date.now();
+    const remaining = expiresAt - currentTime;
     if (remaining <= 0) return 'Expired';
     const minutes = Math.floor(remaining / 60000);
     const seconds = Math.floor((remaining % 60000) / 1000);
@@ -142,6 +239,8 @@ export default function CheckoutPage() {
     acc[key].items.push(item);
     return acc;
   }, {} as Record<string, { filmTitle: string; filmPoster: string; screeningDate: string; screeningTime: string; hallName: string; items: typeof items }>);
+
+  const isProcessing = stripeCheckoutMutation.isPending || demoCheckoutMutation.isPending;
 
   return (
     <div className="min-h-screen bg-cream">
@@ -314,10 +413,23 @@ export default function CheckoutPage() {
                 </label>
               </div>
 
+              {/* Demo mode toggle */}
               <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                <p className="text-sm text-amber-700">
-                  ⚠️ Demo mode: Payment will be simulated. Click &quot;Complete Payment&quot; to finish.
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-amber-700">
+                    {useStripe && stripePromise 
+                      ? '💳 Stripe test mode enabled' 
+                      : '⚠️ Demo mode: Payment will be simulated'}
+                  </p>
+                  {stripePromise && (
+                    <button
+                      onClick={() => setUseStripe(!useStripe)}
+                      className="text-xs text-amber-600 underline hover:text-amber-800"
+                    >
+                      {useStripe ? 'Use demo mode' : 'Use Stripe'}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -347,10 +459,10 @@ export default function CheckoutPage() {
 
               <button
                 onClick={handleCheckout}
-                disabled={checkoutMutation.isPending || items.length === 0}
+                disabled={isProcessing || items.length === 0}
                 className="w-full py-4 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {checkoutMutation.isPending ? (
+                {isProcessing ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
                     Processing...
@@ -358,7 +470,7 @@ export default function CheckoutPage() {
                 ) : (
                   <>
                     <Check className="w-5 h-5" />
-                    Complete Payment
+                    {useStripe && stripePromise ? 'Pay with Stripe' : 'Complete Payment'}
                   </>
                 )}
               </button>
