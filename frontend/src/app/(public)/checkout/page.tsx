@@ -135,7 +135,17 @@ export default function CheckoutPage() {
       }
     },
     onError: (err: Error) => {
-      setProcessingError(err.message || 'Failed to create checkout session');
+      const message = err.message || 'Failed to create checkout session';
+      // Make error messages more user-friendly
+      if (message.includes('already booked')) {
+        setProcessingError('One or more seats you selected are no longer available. Please go back and select different seats.');
+      } else if (message.includes('locked')) {
+        setProcessingError('These seats are currently being held by another customer. Please try again in a few minutes or select different seats.');
+      } else if (message.includes('expired')) {
+        setProcessingError('Your seat reservation has expired. Please go back and select your seats again.');
+      } else {
+        setProcessingError(message);
+      }
     },
   });
 
@@ -189,7 +199,17 @@ export default function CheckoutPage() {
       router.push(`/checkout/success?refs=${bookingRefs}`);
     },
     onError: (err: Error) => {
-      setProcessingError(err.message || 'Failed to process your order. Please try again.');
+      const message = err.message || 'Failed to process your order. Please try again.';
+      // Make error messages more user-friendly
+      if (message.includes('already booked')) {
+        setProcessingError('One or more seats you selected are no longer available. Please go back and select different seats.');
+      } else if (message.includes('locked')) {
+        setProcessingError('These seats are currently being held by another customer. Please try again in a few minutes or select different seats.');
+      } else if (message.includes('expired')) {
+        setProcessingError('Your seat reservation has expired. Please go back and select your seats again.');
+      } else {
+        setProcessingError(message);
+      }
     },
   });
 

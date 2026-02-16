@@ -25,7 +25,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle auth errors
+// Handle errors and extract backend error messages
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -33,9 +33,18 @@ api.interceptors.response.use(
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        // Optionally redirect to login
       }
     }
+    
+    // Extract error message from backend response
+    const backendError = error.response?.data?.error;
+    if (backendError) {
+      // Create a new error with the backend message
+      const enhancedError = new Error(backendError);
+      (enhancedError as Error & { status?: number }).status = error.response?.status;
+      return Promise.reject(enhancedError);
+    }
+    
     return Promise.reject(error);
   }
 );
