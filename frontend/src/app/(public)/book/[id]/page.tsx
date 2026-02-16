@@ -110,12 +110,21 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
       clearSelections();
       refetch();
     } catch (err: unknown) {
-      let errorMessage = err instanceof Error ? err.message : 'Failed to lock seats. Please try again.';
+      // Extract error message from various error formats
+      let errorMessage = 'Failed to lock seats. Please try again.';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'object' && err !== null) {
+        // Handle axios error or other object errors
+        const axiosErr = err as { response?: { data?: { error?: string } }; message?: string };
+        errorMessage = axiosErr.response?.data?.error || axiosErr.message || errorMessage;
+      }
+      
       // Make error messages more user-friendly
       if (errorMessage.includes('already booked') || errorMessage.includes('already locked')) {
         errorMessage = 'Sorry, one or more seats you selected are no longer available. Please choose different seats.';
         refetch(); // Refresh seat map to show updated availability
-      } else if (errorMessage.includes('409') || errorMessage.includes('Conflict')) {
+      } else if (errorMessage.includes('409') || errorMessage.includes('Conflict') || errorMessage.includes('status code 409')) {
         errorMessage = 'These seats were just taken by another customer. Please select different seats.';
         refetch();
       }

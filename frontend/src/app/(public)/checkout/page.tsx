@@ -120,10 +120,19 @@ export default function CheckoutPage() {
 
       return { bookings, session: sessionRes.data };
     },
-    onSuccess: async ({ session }) => {
+    onSuccess: async ({ bookings, session }) => {
       if (session.demo_mode) {
-        // Demo mode - use demo confirm flow
-        setUseStripe(false);
+        // Demo mode - directly confirm the bookings we just created
+        try {
+          for (const booking of bookings) {
+            await paymentApi.demoConfirm(booking.id);
+          }
+          clearCart();
+          const bookingRefs = bookings.map((b: { booking_ref: string }) => b.booking_ref).join(',');
+          router.push(`/checkout/success?refs=${bookingRefs}`);
+        } catch (err) {
+          setProcessingError('Failed to confirm booking. Please try again.');
+        }
         return;
       }
 
@@ -134,8 +143,16 @@ export default function CheckoutPage() {
         setProcessingError('Failed to get checkout URL');
       }
     },
-    onError: (err: Error) => {
-      const message = err.message || 'Failed to create checkout session';
+    onError: (err: unknown) => {
+      // Extract error message from various error formats
+      let message = 'Failed to create checkout session';
+      if (err instanceof Error) {
+        message = err.message;
+      } else if (typeof err === 'object' && err !== null) {
+        const axiosErr = err as { response?: { data?: { error?: string } }; message?: string };
+        message = axiosErr.response?.data?.error || axiosErr.message || message;
+      }
+      
       // Make error messages more user-friendly
       if (message.includes('already booked')) {
         setProcessingError('One or more seats you selected are no longer available. Please go back and select different seats.');
@@ -143,6 +160,8 @@ export default function CheckoutPage() {
         setProcessingError('These seats are currently being held by another customer. Please try again in a few minutes or select different seats.');
       } else if (message.includes('expired')) {
         setProcessingError('Your seat reservation has expired. Please go back and select your seats again.');
+      } else if (message.includes('409') || message.includes('status code 409')) {
+        setProcessingError('One or more seats you selected are no longer available. Please go back and select different seats.');
       } else {
         setProcessingError(message);
       }
