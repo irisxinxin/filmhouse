@@ -110,7 +110,15 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
       clearSelections();
       refetch();
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to lock seats. Please try again.';
+      let errorMessage = err instanceof Error ? err.message : 'Failed to lock seats. Please try again.';
+      // Make error messages more user-friendly
+      if (errorMessage.includes('already booked') || errorMessage.includes('already locked')) {
+        errorMessage = 'Sorry, one or more seats you selected are no longer available. Please choose different seats.';
+        refetch(); // Refresh seat map to show updated availability
+      } else if (errorMessage.includes('409') || errorMessage.includes('Conflict')) {
+        errorMessage = 'These seats were just taken by another customer. Please select different seats.';
+        refetch();
+      }
       setError(errorMessage);
     } finally {
       setIsLocking(false);
