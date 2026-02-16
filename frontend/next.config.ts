@@ -9,6 +9,16 @@ const nextConfig: NextConfig = {
         port: '8080',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: '*.railway.app',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.up.railway.app',
+        pathname: '/**',
+      },
     ],
   },
 };
