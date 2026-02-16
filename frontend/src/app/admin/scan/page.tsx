@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+
 interface Booking {
   id: number;
   booking_ref: string;
@@ -76,7 +78,7 @@ export default function ScanPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:8080/api/admin/tickets/validate', {
+      const res = await fetch(`${API_URL}/admin/tickets/validate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -100,7 +102,7 @@ export default function ScanPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:8080/api/admin/tickets/redeem', {
+      const res = await fetch(`${API_URL}/admin/tickets/redeem`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

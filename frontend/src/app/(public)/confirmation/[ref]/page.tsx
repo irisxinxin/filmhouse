@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { CheckCircle, Calendar, MapPin, Mail, Download, Home, Clock } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+
 interface Seat {
   id: number;
   row: string;
@@ -57,7 +59,7 @@ export default function ConfirmationPage() {
   useEffect(() => {
     const fetchBooking = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/booking/ref/${bookingRef}`);
+        const response = await fetch(`${API_URL}/booking/ref/${bookingRef}`);
         if (!response.ok) {
           throw new Error('Booking not found');
         }

@@ -7,6 +7,8 @@ import type { Film } from '@/types';
 import { Plus, Edit, Trash2, X, Upload, Image as ImageIcon, Film as FilmIcon } from 'lucide-react';
 import Image from 'next/image';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8080';
+
 export default function AdminFilmsPage() {
   const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
@@ -120,7 +122,7 @@ export default function AdminFilmsPage() {
                 {/* Poster */}
                 <div className="relative w-24 h-36 flex-shrink-0 rounded-lg overflow-hidden bg-gray-800 group">
                   {film.poster_url ? (
-                    <Image src={film.poster_url.startsWith('http') ? film.poster_url : `http://localhost:8080${film.poster_url}`} alt={film.title} fill className="object-cover" />
+                    <Image src={film.poster_url.startsWith('http') ? film.poster_url : `${API_BASE}${film.poster_url}`} alt={film.title} fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-600">
                       <FilmIcon className="w-8 h-8" />
