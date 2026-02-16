@@ -4,6 +4,12 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "regions": ["sin1"],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://backend-production-113d.up.railway.app/api/:path*"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
