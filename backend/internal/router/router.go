@@ -33,11 +33,20 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	
 	// Add Vercel preview URLs pattern
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     allowedOrigins,
 		AllowOriginFunc: func(origin string) bool {
 			// Allow Vercel preview deployments
 			if strings.HasSuffix(origin, ".vercel.app") {
 				return true
+			}
+			// Allow filmhousesg.xyz domain (with or without www)
+			if origin == "https://filmhousesg.xyz" || origin == "https://www.filmhousesg.xyz" {
+				return true
+			}
+			// Check if origin is in allowed list
+			for _, allowed := range allowedOrigins {
+				if origin == allowed {
+					return true
+				}
 			}
 			return false
 		},
