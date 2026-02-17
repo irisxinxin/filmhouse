@@ -15,7 +15,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Wait for hydration
   useEffect(() => {
-    setHydrated(true);
+    const t = setTimeout(() => setHydrated(true), 0);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {

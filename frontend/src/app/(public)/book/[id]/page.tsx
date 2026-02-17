@@ -174,11 +174,13 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
         }
       });
       
-      // Redirect directly to checkout (or cart if not authenticated and no guest info)
+      // Give Zustand persist a tick to flush to storage before navigation
+      await new Promise((r) => setTimeout(r, 0));
+
+      // Redirect directly to checkout (or cart if guest needs to enter contact info)
       if (isAuthenticated) {
         router.push('/checkout');
       } else {
-        // For guests, go to cart first to enter contact info
         router.push('/cart');
       }
     } catch (err: unknown) {
@@ -205,6 +207,10 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
 
   const handleGoToCart = () => {
     router.push('/cart');
+  };
+
+  const handleGoToCheckout = () => {
+    router.push(isAuthenticated ? '/checkout' : '/cart');
   };
 
   // Loading state
@@ -341,12 +347,20 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                 Your seats have been reserved for 10 minutes.
               </p>
             </div>
-            <button
-              onClick={handleGoToCart}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-            >
-              View Cart ({cartItemCount})
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleGoToCheckout}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+              >
+                {isAuthenticated ? 'Checkout' : 'Continue'}
+              </button>
+              <button
+                onClick={handleGoToCart}
+                className="px-4 py-2 bg-white text-green-700 border border-green-200 rounded-lg text-sm font-medium hover:bg-green-50 transition-colors"
+              >
+                View Cart ({cartItemCount})
+              </button>
+            </div>
           </div>
         )}
 

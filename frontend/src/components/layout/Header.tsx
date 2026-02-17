@@ -24,13 +24,17 @@ export function Header() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setHydrated(true);
+    const t = setTimeout(() => setHydrated(true), 0);
+    return () => clearTimeout(t);
   }, []);
 
   // Close mobile menu on route change
   useEffect(() => {
-    setMobileMenuOpen(false);
-    setUserMenuOpen(false);
+    const t = setTimeout(() => {
+      setMobileMenuOpen(false);
+      setUserMenuOpen(false);
+    }, 0);
+    return () => clearTimeout(t);
   }, [pathname]);
 
   const cartCount = hydrated ? items.length : 0;

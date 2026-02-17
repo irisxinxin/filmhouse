@@ -30,7 +30,8 @@ export default function CheckoutPage() {
   const [isCheckoutComplete, setIsCheckoutComplete] = useState(false);
 
   useEffect(() => {
-    setHydrated(true);
+    const t = setTimeout(() => setHydrated(true), 0);
+    return () => clearTimeout(t);
   }, []);
 
   // Update current time for countdown
@@ -124,10 +125,13 @@ export default function CheckoutPage() {
     },
     onSuccess: async ({ bookings, session }) => {
       if (session.demo_mode) {
-        // Demo mode - directly confirm the bookings we just created
+        // Demo mode - authenticated bookings require explicit demo confirmation.
+        // Guest bookings are auto-confirmed by the backend.
         try {
-          for (const booking of bookings) {
-            await paymentApi.demoConfirm(booking.id);
+          if (isAuthenticated) {
+            for (const booking of bookings) {
+              await paymentApi.demoConfirm(booking.id);
+            }
           }
           setIsCheckoutComplete(true);
           clearCart();

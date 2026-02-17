@@ -240,6 +240,14 @@ func (h *PaymentHandler) DemoConfirm(c *gin.Context) {
 		return
 	}
 
+	// Make demo confirmation idempotent so repeated clicks / retries don't break the flow.
+	if booking.Status == "confirmed" {
+		h.db.Preload("Tickets.Seat").Preload("Screening.Film").Preload("Screening.Hall").Preload("User").
+			First(&booking, booking.ID)
+		c.JSON(http.StatusOK, booking)
+		return
+	}
+
 	if booking.Status != "pending" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Booking is not pending"})
 		return
