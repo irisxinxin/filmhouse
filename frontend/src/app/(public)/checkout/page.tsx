@@ -205,9 +205,12 @@ export default function CheckoutPage() {
         bookings.push(res.data);
       }
       
-      // Confirm each booking with demo payment
-      for (const booking of bookings) {
-        await paymentApi.demoConfirm(booking.id);
+      // Confirm each booking with demo payment (only for authenticated users)
+      // Guest bookings are auto-confirmed by the backend
+      if (isAuthenticated) {
+        for (const booking of bookings) {
+          await paymentApi.demoConfirm(booking.id);
+        }
       }
       
       return bookings;
