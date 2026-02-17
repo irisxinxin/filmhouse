@@ -101,9 +101,39 @@ func (s *BookingService) CreateBooking(userID, screeningID uint, seatIDs []uint,
 		// First, clean up expired locks
 		tx.Where("expires_at < ?", time.Now()).Delete(&models.SeatLock{})
 
+		// If a previous checkout attempt already created a pending booking for these seats,
+		// return that existing booking instead of failing with 409.
+		var existingBookingID *uint
+		for _, seatID := range seatIDs {
+			var ticket models.Ticket
+			err := tx.Joins("JOIN bookings ON bookings.id = tickets.booking_id").
+				Where("tickets.seat_id = ? AND bookings.screening_id = ? AND bookings.status = ? AND bookings.user_id = ?",
+					seatID, screeningID, "pending", userID).
+				First(&ticket).Error
+			if err == nil {
+				if existingBookingID == nil {
+					existingBookingID = &ticket.BookingID
+				} else if *existingBookingID != ticket.BookingID {
+					return fmt.Errorf("seats belong to different pending bookings")
+				}
+			}
+		}
+
+		if existingBookingID != nil {
+			var existing models.Booking
+			if err := tx.Preload("Tickets.Seat").Preload("Screening.Film").Preload("Screening.Hall").
+				First(&existing, *existingBookingID).Error; err != nil {
+				return fmt.Errorf("failed to load existing booking: %w", err)
+			}
+			booking = &existing
+			// Release any locks the user might still hold for this screening
+			tx.Where("user_id = ? AND screening_id = ?", userID, screeningID).Delete(&models.SeatLock{})
+			return nil
+		}
+
 		// Check each seat - either locked by this user OR available to lock now
 		for _, seatID := range seatIDs {
-			// Check if seat is already booked
+			// Check if seat is already booked (by anyone)
 			var count int64
 			tx.Model(&models.Ticket{}).
 				Joins("JOIN bookings ON bookings.id = tickets.booking_id").

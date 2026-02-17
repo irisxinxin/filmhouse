@@ -119,7 +119,8 @@ func (h *PaymentHandler) CreateCheckoutSession(c *gin.Context) {
 		// If Stripe is misconfigured (bad/expired key), fall back to demo mode
 		// so checkout remains usable in test environments.
 		if stripeErr, ok := err.(*stripe.Error); ok {
-			if stripeErr.Type == stripe.ErrorTypeAuthentication || stripeErr.Code == stripe.ErrorCodeInvalidRequest {
+			// Treat auth/permission/config errors as "not configured" and fall back.
+			if stripeErr.HTTPStatusCode == http.StatusUnauthorized || stripeErr.HTTPStatusCode == http.StatusForbidden || stripeErr.Code == stripe.ErrorCodeAPIKeyExpired {
 				c.JSON(http.StatusOK, gin.H{
 					"demo_mode":  true,
 					"booking_id": booking.ID,
