@@ -3,15 +3,17 @@
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { bookingsApi, paymentApi } from '@/lib/api';
+import { useCartStore } from '@/stores/cart';
 import { formatCurrency, formatDate, formatTime } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Check, Download, Mail, Home, Loader2 } from 'lucide-react';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import type { Ticket } from '@/types';
 
 function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
+  const { clearCart } = useCartStore();
   const bookingRefs = searchParams.get('refs')?.split(',') || [];
   const sessionId = searchParams.get('session_id');
 
@@ -48,6 +50,14 @@ function CheckoutSuccessContent() {
   });
 
   const isLoading = isLoadingPayment || isLoadingBookings;
+
+  // Stripe flow redirects away from the app, so the cart may still contain the old seats.
+  // Once we can display the confirmed booking(s), clear the cart to avoid stale locks/"unavailable" warnings.
+  useEffect(() => {
+    if (bookings && bookings.length > 0) {
+      clearCart();
+    }
+  }, [bookings, clearCart]);
 
   if (isLoading) {
     return (
