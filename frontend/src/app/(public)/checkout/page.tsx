@@ -27,6 +27,7 @@ export default function CheckoutPage() {
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [useStripe, setUseStripe] = useState(true);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const [isCheckoutComplete, setIsCheckoutComplete] = useState(false);
 
   useEffect(() => {
     setHydrated(true);
@@ -56,15 +57,16 @@ export default function CheckoutPage() {
     return () => clearInterval(interval);
   }, [hydrated, clearExpiredItems]);
 
-  // Redirect if no items or no user info
+  // Redirect if no items or no user info (but not if checkout just completed)
   useEffect(() => {
+    if (isCheckoutComplete) return; // Don't redirect after successful checkout
     if (hydrated && items.length === 0) {
       router.push('/cart');
     }
     if (hydrated && !isAuthenticated && !guestInfo) {
       router.push('/cart');
     }
-  }, [hydrated, items.length, isAuthenticated, guestInfo, router]);
+  }, [hydrated, items.length, isAuthenticated, guestInfo, router, isCheckoutComplete]);
 
   // Create booking and redirect to Stripe
   const stripeCheckoutMutation = useMutation({
@@ -127,6 +129,7 @@ export default function CheckoutPage() {
           for (const booking of bookings) {
             await paymentApi.demoConfirm(booking.id);
           }
+          setIsCheckoutComplete(true);
           clearCart();
           const bookingRefs = bookings.map((b: { booking_ref: string }) => b.booking_ref).join(',');
           router.push(`/checkout/success?refs=${bookingRefs}`);
@@ -216,6 +219,7 @@ export default function CheckoutPage() {
       return bookings;
     },
     onSuccess: (bookings) => {
+      setIsCheckoutComplete(true);
       clearCart();
       const bookingRefs = bookings.map(b => b.booking_ref).join(',');
       router.push(`/checkout/success?refs=${bookingRefs}`);

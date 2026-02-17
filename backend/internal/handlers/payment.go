@@ -104,17 +104,18 @@ func (h *PaymentHandler) CreateCheckoutSession(c *gin.Context) {
 		params.CustomerEmail = stripe.String(booking.User.Email)
 	}
 
+	// Check if Stripe is configured BEFORE calling the API
+	if stripe.Key == "" || stripe.Key == "sk_test_placeholder" {
+		c.JSON(http.StatusOK, gin.H{
+			"demo_mode":  true,
+			"booking_id": booking.ID,
+			"message":    "Stripe not configured. Use demo checkout.",
+		})
+		return
+	}
+
 	s, err := session.New(params)
 	if err != nil {
-		// If Stripe is not configured, return demo mode response
-		if stripe.Key == "sk_test_placeholder" {
-			c.JSON(http.StatusOK, gin.H{
-				"demo_mode":  true,
-				"booking_id": booking.ID,
-				"message":    "Stripe not configured. Use demo checkout.",
-			})
-			return
-		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create checkout session: " + err.Error()})
 		return
 	}

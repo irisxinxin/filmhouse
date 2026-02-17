@@ -98,18 +98,12 @@ func (s *BookingService) CreateBooking(userID, screeningID uint, seatIDs []uint,
 			return fmt.Errorf("screening not found: %w", err)
 		}
 
-		// Verify all seats are still locked by this user
-		for _, seatID := range seatIDs {
-			var lock models.SeatLock
-			err := tx.Where("screening_id = ? AND seat_id = ? AND user_id = ? AND expires_at > ?",
-				screeningID, seatID, userID, time.Now()).First(&lock).Error
-			if err != nil {
-				return fmt.Errorf("seat %d lock expired or not found", seatID)
-			}
-		}
+		// First, clean up expired locks
+		tx.Where("expires_at < ?", time.Now()).Delete(&models.SeatLock{})
 
-		// Double-check seats are not already booked
+		// Check each seat - either locked by this user OR available to lock now
 		for _, seatID := range seatIDs {
+			// Check if seat is already booked
 			var count int64
 			tx.Model(&models.Ticket{}).
 				Joins("JOIN bookings ON bookings.id = tickets.booking_id").
@@ -117,8 +111,21 @@ func (s *BookingService) CreateBooking(userID, screeningID uint, seatIDs []uint,
 					seatID, screeningID, []string{"pending", "confirmed"}).
 				Count(&count)
 			if count > 0 {
-				return fmt.Errorf("seat %d was booked by another user", seatID)
+				return fmt.Errorf("seat %d is already booked", seatID)
 			}
+
+			// Check if locked by another user
+			var existingLock models.SeatLock
+			err := tx.Where("screening_id = ? AND seat_id = ? AND expires_at > ?",
+				screeningID, seatID, time.Now()).First(&existingLock).Error
+			if err == nil {
+				// Lock exists - check if it's ours
+				if existingLock.UserID == nil || *existingLock.UserID != userID {
+					return fmt.Errorf("seat %d is locked by another user", seatID)
+				}
+				// It's our lock, continue
+			}
+			// No lock or our lock - seat is available for booking
 		}
 
 		// Get user for membership discount

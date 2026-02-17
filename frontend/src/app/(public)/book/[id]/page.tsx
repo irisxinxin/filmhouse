@@ -17,7 +17,7 @@ import Image from 'next/image';
 export default function BookingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { addItem, items, getItemsByScreening } = useCartStore();
+  const { addItem, items, getItemsByScreening, removeItemsBySeat } = useCartStore();
   const { isAuthenticated } = useAuthStore();
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -124,6 +124,75 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
       if (errorMessage.includes('already booked') || errorMessage.includes('already locked')) {
         errorMessage = 'Sorry, one or more seats you selected are no longer available. Please choose different seats.';
         refetch(); // Refresh seat map to show updated availability
+      } else if (errorMessage.includes('409') || errorMessage.includes('Conflict') || errorMessage.includes('status code 409')) {
+        errorMessage = 'These seats were just taken by another customer. Please select different seats.';
+        refetch();
+      }
+      setError(errorMessage);
+    } finally {
+      setIsLocking(false);
+    }
+  };
+
+  // Proceed directly to checkout (add to cart + redirect)
+  const handleProceedToCheckout = async () => {
+    if (!data || selectedSeats.length === 0 || isLocking) return;
+    
+    const { screening, seats } = data;
+    
+    setIsLocking(true);
+    setError(null);
+    
+    try {
+      // Lock seats on the server first
+      if (isAuthenticated) {
+        await bookingsApi.lockSeats(screening.id, selectedSeats);
+      } else {
+        await bookingsApi.guestLockSeats(screening.id, selectedSeats);
+      }
+      
+      const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes from now
+      
+      selectedSeats.forEach((seatId) => {
+        const seat = seats.find(s => s.id === seatId);
+        const ticketSelection = getSelection(seatId);
+        if (seat) {
+          addItem({
+            screeningId: screening.id,
+            seatId: seat.id,
+            seatLabel: `${seat.row}${seat.number}`,
+            filmTitle: screening.film?.title || 'Unknown Film',
+            filmPoster: screening.film?.poster_url || '/images/placeholder-poster.jpg',
+            screeningDate: formatDate(screening.start_time, 'EEEE, d MMMM yyyy'),
+            screeningTime: formatTime(screening.start_time),
+            hallName: screening.hall?.name || 'Main Hall',
+            price: ticketSelection.price,
+            ticketTypeId: ticketSelection.ticketTypeId,
+            ticketTypeName: ticketSelection.ticketTypeName,
+            expiresAt,
+          });
+        }
+      });
+      
+      // Redirect directly to checkout (or cart if not authenticated and no guest info)
+      if (isAuthenticated) {
+        router.push('/checkout');
+      } else {
+        // For guests, go to cart first to enter contact info
+        router.push('/cart');
+      }
+    } catch (err: unknown) {
+      let errorMessage = 'Failed to lock seats. Please try again.';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'object' && err !== null) {
+        const axiosErr = err as { response?: { data?: { error?: string } }; message?: string };
+        errorMessage = axiosErr.response?.data?.error || axiosErr.message || errorMessage;
+      }
+      
+      if (errorMessage.includes('already booked') || errorMessage.includes('already locked')) {
+        errorMessage = 'Sorry, one or more seats you selected are no longer available. Please choose different seats.';
+        refetch();
       } else if (errorMessage.includes('409') || errorMessage.includes('Conflict') || errorMessage.includes('status code 409')) {
         errorMessage = 'These seats were just taken by another customer. Please select different seats.';
         refetch();
@@ -314,6 +383,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                 seats={seatsWithCartStatus}
                 selectedSeats={selectedSeats}
                 onSeatClick={handleSeatClick}
+                onRemoveFromCart={(seatId) => removeItemsBySeat(Number(id), seatId)}
                 disabled={false}
               />
             </div>
@@ -352,24 +422,34 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                     </p>
                   </div>
 
-                  {/* Add to Cart Button */}
+                  {/* Proceed to Checkout Button - Primary action */}
                   <button
-                    onClick={handleAddToCart}
+                    onClick={handleProceedToCheckout}
                     disabled={isLocking}
                     className="w-full py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-xl transition-all hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLocking ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
-                      <Plus className="w-5 h-5" />
+                      <Check className="w-5 h-5" />
                     )}
-                    {isLocking ? 'Reserving...' : 'Add to Cart'}
+                    {isLocking ? 'Reserving...' : 'Proceed to Checkout'}
+                  </button>
+
+                  {/* Add to Cart Button - Secondary action */}
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={isLocking}
+                    className="w-full mt-3 py-3 border-2 border-primary text-primary font-semibold rounded-xl hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Plus className="w-5 h-5" />
+                    Add to Cart
                   </button>
 
                   {cartItemCount > 0 && (
                     <button
                       onClick={handleGoToCart}
-                      className="w-full mt-3 py-3 border-2 border-primary text-primary font-semibold rounded-xl hover:bg-primary/5 transition-colors flex items-center justify-center gap-2"
+                      className="w-full mt-3 py-3 border border-gray-300 text-text-secondary font-medium rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                     >
                       <ShoppingCart className="w-5 h-5" />
                       View Cart ({cartItemCount})

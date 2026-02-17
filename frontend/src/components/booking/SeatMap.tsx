@@ -8,10 +8,11 @@ interface SeatMapProps {
   seats: SeatWithStatus[];
   selectedSeats: number[];
   onSeatClick: (seatId: number) => void;
+  onRemoveFromCart?: (seatId: number) => void;
   disabled?: boolean;
 }
 
-export function SeatMap({ seats, selectedSeats, onSeatClick, disabled = false }: SeatMapProps) {
+export function SeatMap({ seats, selectedSeats, onSeatClick, onRemoveFromCart, disabled = false }: SeatMapProps) {
   const seatsByRow = useMemo(() => groupSeatsByRow(seats), [seats]);
   const rows = Object.keys(seatsByRow).sort().reverse();
   const maxSeatNumber = Math.max(...seats.map(s => s.number));
@@ -29,7 +30,7 @@ export function SeatMap({ seats, selectedSeats, onSeatClick, disabled = false }:
       case 'locked':
         return `bg-amber-100 text-amber-600 cursor-not-allowed border-2 border-amber-300 ${baseStyle}`;
       case 'in_cart':
-        return `bg-amber-500 text-white cursor-not-allowed ${baseStyle}`;
+        return `bg-amber-500 text-white hover:bg-amber-600 cursor-pointer ${baseStyle}`;
       default:
         return `bg-emerald-500 text-white hover:bg-emerald-600 hover:scale-105 cursor-pointer shadow-sm hover:shadow-md ${baseStyle}`;
     }
@@ -70,12 +71,21 @@ export function SeatMap({ seats, selectedSeats, onSeatClick, disabled = false }:
 
                     const isSelected = selectedSeats.includes(seat.id);
                     const status = isSelected ? 'selected' : seat.status;
-                    const isDisabled = disabled || status === 'booked' || status === 'locked' || status === 'in_cart';
+                    const isInCart = status === 'in_cart';
+                    const isDisabled = disabled || status === 'booked' || status === 'locked';
+
+                    const handleClick = () => {
+                      if (isInCart && onRemoveFromCart) {
+                        onRemoveFromCart(seat.id);
+                      } else if (!isDisabled && !isInCart) {
+                        onSeatClick(seat.id);
+                      }
+                    };
 
                     return (
                       <button
                         key={seat.id}
-                        onClick={() => !isDisabled && onSeatClick(seat.id)}
+                        onClick={handleClick}
                         disabled={isDisabled}
                         className={`
                           w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-t-sm sm:rounded-t-md text-[6px] sm:text-[8px] md:text-[10px] font-bold
