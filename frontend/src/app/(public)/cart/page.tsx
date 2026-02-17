@@ -425,32 +425,42 @@ export default function CartPage() {
                 </div>
               ) : null}
 
-              <button
-                onClick={handleProceedToCheckout}
-                disabled={invalidSeats.length > 0 || isValidating}
-                className={`w-full py-4 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 ${
-                  invalidSeats.length > 0
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-primary text-white hover:bg-primary-dark'
-                }`}
-              >
-                {isValidating ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Validating...
-                  </>
-                ) : invalidSeats.length > 0 ? (
-                  <>
-                    <XCircle className="w-5 h-5" />
-                    Remove Unavailable Seats First
-                  </>
-                ) : (
-                  <>
-                    Proceed to Checkout
-                    <ArrowRight className="w-5 h-5" />
-                  </>
-                )}
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  href="/"
+                  className="w-full sm:w-auto sm:flex-1 py-4 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 border border-gray-200 bg-white text-text-primary hover:bg-gray-50"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                  Buy More Tickets
+                </Link>
+
+                <button
+                  onClick={handleProceedToCheckout}
+                  disabled={invalidSeats.length > 0 || isValidating}
+                  className={`w-full sm:w-auto sm:flex-1 py-4 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 ${
+                    invalidSeats.length > 0
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-primary text-white hover:bg-primary-dark'
+                  }`}
+                >
+                  {isValidating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Validating...
+                    </>
+                  ) : invalidSeats.length > 0 ? (
+                    <>
+                      <XCircle className="w-5 h-5" />
+                      Remove Unavailable Seats First
+                    </>
+                  ) : (
+                    <>
+                      Proceed to Checkout
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
+              </div>
 
               {invalidSeats.length > 0 && (
                 <p className="text-center text-sm text-red-600 mt-3">
