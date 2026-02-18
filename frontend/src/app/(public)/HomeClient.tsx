@@ -178,7 +178,7 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
 
   return (
     <article className="fh-film-card">
-      <div className="flex h-[420px]">
+      <div className="flex h-[340px]">
         <Link href={`/film/${film.slug}`}
           className="group relative w-[220px] sm:w-[280px] shrink-0 overflow-hidden bg-white/30">
           {posterUrl ? (
@@ -205,12 +205,13 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
 
           {film.synopsis && <p className="fh-card-synopsis">{film.synopsis}</p>}
 
-          {/* Upcoming showtimes grouped by date */}
-          {Object.keys(screeningsByDate).length > 0 && (
-            <div className="mt-auto pt-3 space-y-1.5">
-              {Object.entries(screeningsByDate).slice(0, 3).map(([dateKey, dateSessions]) => (
-                <div key={dateKey} className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary min-w-[70px]">
+          {/* Next screening date */}
+          {Object.keys(screeningsByDate).length > 0 && (() => {
+            const [dateKey, dateSessions] = Object.entries(screeningsByDate)[0];
+            return (
+              <div className="mt-auto pt-3">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
                     {formatShortDate(dateSessions[0].start_time)}
                   </span>
                   {dateSessions.map((s) => (
@@ -218,11 +219,11 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
                       {formatTime(s.start_time)}
                     </Link>
                   ))}
+                  {film.is_4k && <span className="fh-badge-4k">4K</span>}
                 </div>
-              ))}
-              {film.is_4k && <span className="fh-badge-4k">4K</span>}
-            </div>
-          )}
+              </div>
+            );
+          })()}
 
           <div className="fh-card-dates pt-3 transition-all duration-300">
             <Link href={`/film/${film.slug}`} className="fh-btn-outline-red">
