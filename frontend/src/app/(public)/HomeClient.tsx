@@ -155,7 +155,7 @@ export default function HomeClient({
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="fh-film-card animate-pulse">
                 <div className="flex h-[240px]">
-                  <div className="w-[200px] bg-white/30 shrink-0" />
+                  <div className="w-[230px] bg-white/30 shrink-0" />
                   <div className="flex-1 p-4 space-y-3">
                     <div className="h-5 bg-white/30 rounded w-2/3" />
                     <div className="h-3 bg-white/30 rounded w-1/2" />
@@ -224,7 +224,7 @@ function FilmCard({
         {/* Poster — fills full card height */}
         <Link
           href={`/film/${film.slug}`}
-          className="relative w-[160px] sm:w-[200px] shrink-0 overflow-hidden bg-white/30"
+          className="group relative w-[180px] sm:w-[230px] shrink-0 overflow-hidden bg-white/30"
         >
           {posterUrl ? (
             <Image
@@ -232,12 +232,13 @@ function FilmCard({
               alt={film.title}
               fill
               className="object-cover"
-              sizes="170px"
+              sizes="230px"
               priority={!!priority}
             />
           ) : (
             <div className="w-full h-full bg-white/20" />
           )}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
         </Link>
 
         {/* Content */}
@@ -284,7 +285,7 @@ function FilmCard({
       </div>
 
       {/* Other dates — bottom of card, after content area */}
-      <div className="border-t border-[rgba(139,35,50,0.15)] ml-[160px] sm:ml-[200px] px-3 sm:px-4 py-2">
+      <div className="border-t border-[rgba(145,1,1,0.15)] ml-[180px] sm:ml-[230px] px-3 sm:px-4 py-2">
         <Link
           href={`/film/${film.slug}`}
           className="fh-btn-outline-red"

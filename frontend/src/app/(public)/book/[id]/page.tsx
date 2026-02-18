@@ -216,7 +216,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
   // Loading state
   if (!hydrated) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <Loader2 className="w-10 h-10 text-primary animate-spin" />
       </div>
     );
@@ -224,7 +224,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
 
   if (isLoading || !data) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
           <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto mb-4" />
           <p className="text-text-secondary">Loading seat map...</p>
@@ -246,7 +246,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
   }));
 
   return (
-    <div className="min-h-screen bg-cream pt-2">
+    <div className="min-h-screen pt-2" style={{ background: 'var(--background)' }}>
       {/* Film Info Header */}
       <div className="bg-primary text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -260,7 +260,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
           
           <div className="flex items-center gap-4 md:gap-6">
             {/* Mini Poster */}
-            <div className="hidden sm:block relative w-16 md:w-20 h-24 md:h-28 rounded-lg overflow-hidden shadow-lg flex-shrink-0">
+            <div className="hidden sm:block relative w-16 md:w-20 h-24 md:h-28 overflow-hidden shadow-lg flex-shrink-0">
               <Image
                 src={posterUrl}
                 alt={screening.film?.title || 'Film'}
@@ -322,7 +322,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         {/* Error Alert */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 animate-slide-down">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 flex items-start gap-3 animate-slide-down">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-red-800">Error</p>
@@ -339,7 +339,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
 
         {/* Added to Cart Success */}
         {addedToCart && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start gap-3 animate-slide-down">
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 flex items-start gap-3 animate-slide-down">
             <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-medium text-green-800">Added to cart!</p>
@@ -350,13 +350,13 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
             <div className="flex items-center gap-2">
               <button
                 onClick={handleGoToCheckout}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                className="px-4 py-2 bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition-colors"
               >
                 {isAuthenticated ? 'Checkout' : 'Continue'}
               </button>
               <button
                 onClick={handleGoToCart}
-                className="px-4 py-2 bg-white text-green-700 border border-green-200 rounded-lg text-sm font-medium hover:bg-green-50 transition-colors"
+                className="px-4 py-2 bg-white text-green-700 border border-green-200 text-sm font-medium hover:bg-green-50 transition-colors"
               >
                 View Cart ({cartItemCount})
               </button>
@@ -367,7 +367,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Main Content - Seat Map */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-sm p-4 md:p-6">
+            <div className="bg-white shadow-sm p-4 md:p-6">
               <h2 className="text-xl font-bold text-text-primary mb-2">Select Your Seats</h2>
               <p className="text-text-secondary text-sm mb-6">
                 Click on available seats to select. Seats are held for 10 minutes after adding to cart.
@@ -376,19 +376,19 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
               {/* Legend */}
               <div className="flex flex-wrap gap-4 mb-6 text-sm">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-emerald-500 rounded" />
+                  <div className="w-6 h-6 bg-[#2d6a4f]" />
                   <span className="text-text-secondary">Available</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-primary rounded" />
+                  <div className="w-6 h-6 bg-primary" />
                   <span className="text-text-secondary">Selected</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-amber-500 rounded" />
+                  <div className="w-6 h-6 bg-amber-500" />
                   <span className="text-text-secondary">In Cart</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gray-300 rounded" />
+                  <div className="w-6 h-6 bg-gray-300" />
                   <span className="text-text-secondary">Sold</span>
                 </div>
               </div>
@@ -405,7 +405,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
 
           {/* Sidebar - Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-sm p-5 md:p-6 sticky top-24">
+            <div className="bg-white shadow-sm p-5 md:p-6 sticky top-24">
               <h3 className="text-lg font-bold text-text-primary mb-4">Your Selection</h3>
               
               {selectedSeatDetails.length > 0 ? (
@@ -440,7 +440,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                   <button
                     onClick={handleProceedToCheckout}
                     disabled={isLocking}
-                    className="w-full py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-xl transition-all hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-3 bg-primary hover:bg-primary-dark text-white font-semibold transition-all hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLocking ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -454,7 +454,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                   <button
                     onClick={handleAddToCart}
                     disabled={isLocking}
-                    className="w-full mt-3 py-3 border-2 border-primary text-primary font-semibold rounded-xl hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full mt-3 py-3 border-2 border-primary text-primary font-semibold hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Plus className="w-5 h-5" />
                     Add to Cart
@@ -463,7 +463,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                   {cartItemCount > 0 && (
                     <button
                       onClick={handleGoToCart}
-                      className="w-full mt-3 py-3 border border-gray-300 text-text-secondary font-medium rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                      className="w-full mt-3 py-3 border border-gray-300 text-text-secondary font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                     >
                       <ShoppingCart className="w-5 h-5" />
                       View Cart ({cartItemCount})
@@ -481,7 +481,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                   {cartItemCount > 0 && (
                     <button
                       onClick={handleGoToCart}
-                      className="mt-4 px-6 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors"
+                      className="mt-4 px-6 py-2 bg-primary text-white text-sm font-medium hover:bg-primary-dark transition-colors"
                     >
                       View Cart ({cartItemCount})
                     </button>
@@ -490,7 +490,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
               )}
 
               {/* Info */}
-              <div className="mt-6 p-3 bg-blue-50 rounded-lg">
+              <div className="mt-6 p-3 bg-blue-50">
                 <p className="text-xs text-blue-700">
                   💡 You can add tickets from multiple screenings to your cart and checkout together.
                 </p>

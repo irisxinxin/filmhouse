@@ -49,7 +49,7 @@ export default function FilmDetailPage() {
 
   if (filmLoading) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <Loader2 className="w-10 h-10 text-primary animate-spin" />
       </div>
     );
@@ -57,7 +57,7 @@ export default function FilmDetailPage() {
 
   if (!film) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
           <h1 className="text-2xl font-bold text-text-primary mb-2">Film Not Found</h1>
           <p className="text-text-secondary mb-4">The film you&apos;re looking for doesn&apos;t exist.</p>
@@ -73,7 +73,7 @@ export default function FilmDetailPage() {
   const bannerUrl = film.banner_url || null;
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       {/* Hero Section with Banner */}
       <div className="relative">
         {/* Background Banner */}
@@ -87,9 +87,9 @@ export default function FilmDetailPage() {
               priority
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-primary/30 to-cream" />
+            <div className="w-full h-full bg-gradient-to-br from-primary/30 to-[#d8d0c8]" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-cream via-cream/90 to-cream/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#d8d0c8] via-[#d8d0c8]/90 to-[#d8d0c8]/30" />
         </div>
 
         {/* Content */}
@@ -105,7 +105,7 @@ export default function FilmDetailPage() {
           <div className="flex flex-col md:flex-row gap-6 md:gap-8">
             {/* Poster */}
             <div className="flex-shrink-0 mx-auto md:mx-0">
-              <div className="relative w-56 md:w-64 aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl">
+              <div className="relative w-56 md:w-64 aspect-[2/3] overflow-hidden shadow-2xl">
                 <Image
                   src={posterUrl}
                   alt={film.title}
@@ -179,7 +179,7 @@ export default function FilmDetailPage() {
 
               {/* Awards Full */}
               {film.awards && (
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 mb-6 max-w-2xl">
+                <div className="bg-white/80 backdrop-blur-sm p-4 mb-6 max-w-2xl">
                   <p className="text-sm text-text-secondary italic">{film.awards}</p>
                 </div>
               )}
@@ -190,7 +190,7 @@ export default function FilmDetailPage() {
                   href={film.trailer_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-white border-2 border-primary text-primary px-6 py-3 rounded-xl font-semibold hover:bg-primary hover:text-white transition-all"
+                  className="inline-flex items-center gap-2 bg-white border-2 border-primary text-primary px-6 py-3 font-semibold hover:bg-primary hover:text-white transition-all"
                 >
                   <Play className="w-5 h-5" />
                   Watch Trailer
@@ -217,7 +217,7 @@ export default function FilmDetailPage() {
               <button
                 key={date}
                 onClick={() => setSelectedDate(date)}
-                className={`flex flex-col items-center px-4 py-3 rounded-xl min-w-[72px] transition-all duration-200 ${
+                className={`flex flex-col items-center px-4 py-3 min-w-[72px] transition-all duration-200 ${
                   isSelected
                     ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-105'
                     : 'bg-white text-text-secondary hover:bg-gray-50 border border-gray-200'
@@ -239,17 +239,17 @@ export default function FilmDetailPage() {
 
         {/* Screenings Grid */}
         {screeningsLoading ? (
-          <div className="bg-white rounded-2xl p-8 text-center">
+          <div className="bg-white/80 p-8 text-center">
             <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto" />
           </div>
         ) : screenings && screenings.length > 0 ? (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="bg-white/80 p-6 shadow-sm">
             <div className="flex flex-wrap gap-3">
               {screenings.map((screening) => (
                 <Link
                   key={screening.id}
                   href={`/book/${screening.id}`}
-                  className="group flex flex-col items-center px-6 py-4 bg-cream hover:bg-primary rounded-xl transition-all duration-200 border border-gray-200 hover:border-primary hover:shadow-lg"
+                  className="group flex flex-col items-center px-6 py-4 bg-[#d8d0c8] hover:bg-primary transition-all duration-200 border border-primary/20 hover:border-primary hover:shadow-lg"
                 >
                   <span className="text-lg font-bold text-text-primary group-hover:text-white transition-colors">
                     {formatTime(screening.start_time)}
@@ -271,7 +271,7 @@ export default function FilmDetailPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl p-8 text-center">
+          <div className="bg-white/80 p-8 text-center">
             <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-text-primary mb-2">No screenings available</h3>
             <p className="text-text-muted">Try selecting another date above.</p>

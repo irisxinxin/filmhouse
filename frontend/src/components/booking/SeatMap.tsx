@@ -32,7 +32,7 @@ export function SeatMap({ seats, selectedSeats, onSeatClick, onRemoveFromCart, d
       case 'in_cart':
         return `bg-amber-500 text-white hover:bg-amber-600 cursor-pointer ${baseStyle}`;
       default:
-        return `bg-emerald-500 text-white hover:bg-emerald-600 hover:scale-105 cursor-pointer shadow-sm hover:shadow-md ${baseStyle}`;
+        return `bg-[#2d6a4f] text-white hover:bg-[#1b4332] hover:scale-105 cursor-pointer shadow-sm hover:shadow-md ${baseStyle}`;
     }
   };
 
@@ -45,7 +45,7 @@ export function SeatMap({ seats, selectedSeats, onSeatClick, onRemoveFromCart, d
             <div className="h-1.5 sm:h-2 bg-gradient-to-r from-transparent via-gray-400 to-transparent rounded-full" />
             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1/2 h-6 sm:h-8 bg-gradient-to-b from-gray-200/50 to-transparent rounded-b-full blur-sm" />
           </div>
-          <p className="mt-2 sm:mt-4 text-xs sm:text-sm text-text-muted font-medium uppercase tracking-widest">Screen</p>
+          <p className="mt-2 sm:mt-4 text-xs sm:text-sm text-text-muted font-bold uppercase tracking-[0.2em]">CINEMA SCREEN FRONT</p>
         </div>
 
         {/* Seat Grid */}
@@ -88,7 +88,7 @@ export function SeatMap({ seats, selectedSeats, onSeatClick, onRemoveFromCart, d
                         onClick={handleClick}
                         disabled={isDisabled}
                         className={`
-                          w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-t-sm sm:rounded-t-md text-[6px] sm:text-[8px] md:text-[10px] font-bold
+                          w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[6px] sm:text-[8px] md:text-[10px] font-bold
                           transition-all duration-200 ease-out
                           flex items-center justify-center
                           focus:outline-none focus-visible:ring-1 focus-visible:ring-primary
@@ -113,19 +113,19 @@ export function SeatMap({ seats, selectedSeats, onSeatClick, onRemoveFromCart, d
         {/* Legend */}
         <div className="mt-3 sm:mt-6 flex flex-wrap justify-center gap-2 sm:gap-3 text-[8px] sm:text-[10px]">
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-t-sm bg-emerald-500" />
+            <div className="w-3 h-3 sm:w-4 sm:h-4 bg-[#2d6a4f]" />
             <span className="text-text-secondary">Available</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-t-sm bg-primary ring-1 ring-primary ring-offset-1 ring-offset-cream" />
+            <div className="w-3 h-3 sm:w-4 sm:h-4 bg-primary ring-1 ring-primary ring-offset-1 ring-offset-cream" />
             <span className="text-text-secondary">Selected</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-t-sm bg-gray-300" />
+            <div className="w-3 h-3 sm:w-4 sm:h-4 bg-gray-300" />
             <span className="text-text-secondary">Sold</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-t-sm bg-amber-100 border border-amber-300" />
+            <div className="w-3 h-3 sm:w-4 sm:h-4 bg-amber-100 border border-amber-300" />
             <span className="text-text-secondary">Reserved</span>
           </div>
         </div>
