@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { loadStripe } from '@stripe/stripe-js';
@@ -10,7 +10,15 @@ import { bookingsApi, paymentApi } from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, CreditCard, Check, AlertCircle, Loader2, Trash2, Clock } from 'lucide-react';
+import { ArrowLeft, CreditCard, Check, AlertCircle, Loader2, Trash2, Clock, XCircle } from 'lucide-react';
+
+interface InvalidSeat {
+  screening_id: number;
+  seat_id: number;
+  seat_label: string;
+  film_title: string;
+  reason: string;
+}
 
 // Initialize Stripe
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
@@ -28,11 +36,71 @@ export default function CheckoutPage() {
   const [useStripe, setUseStripe] = useState(true);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
   const [isCheckoutComplete, setIsCheckoutComplete] = useState(false);
+  const [invalidSeats, setInvalidSeats] = useState<InvalidSeat[]>([]);
+  const [isValidating, setIsValidating] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setHydrated(true), 0);
     return () => clearTimeout(t);
   }, []);
+
+  // Validate cart seats against backend
+  const validateCartSeats = useCallback(async () => {
+    if (items.length === 0) {
+      setInvalidSeats([]);
+      return true;
+    }
+    setIsValidating(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bookings/validate-cart`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map(item => ({
+            screening_id: item.screeningId,
+            seat_id: item.seatId,
+            seat_label: item.seatLabel,
+            film_title: item.filmTitle,
+          })),
+        }),
+      });
+      const data = await response.json();
+      if (!data.valid && data.invalid_seats) {
+        setInvalidSeats(data.invalid_seats);
+        return false;
+      }
+      setInvalidSeats([]);
+      return true;
+    } catch (error) {
+      console.error('Failed to validate cart:', error);
+      return true;
+    } finally {
+      setIsValidating(false);
+    }
+  }, [items]);
+
+  // Validate on mount and when items change
+  useEffect(() => {
+    if (hydrated && items.length > 0) {
+      validateCartSeats();
+    }
+  }, [hydrated, items.length, validateCartSeats]);
+
+  const isItemInvalid = (item: typeof items[0]) => {
+    return invalidSeats.some(
+      inv => inv.screening_id === item.screeningId && inv.seat_id === item.seatId
+    );
+  };
+
+  const handleRemoveInvalidSeats = () => {
+    invalidSeats.forEach(inv => {
+      const item = items.find(
+        i => i.screeningId === inv.screening_id && i.seatId === inv.seat_id
+      );
+      if (item) removeItem(item.id);
+    });
+    setInvalidSeats([]);
+  };
 
   // Update current time for countdown
   useEffect(() => {
@@ -243,8 +311,12 @@ export default function CheckoutPage() {
     },
   });
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     setProcessingError(null);
+    
+    // Re-validate seats before payment
+    const isValid = await validateCartSeats();
+    if (!isValid) return;
     
     if (useStripe && stripePromise) {
       stripeCheckoutMutation.mutate();
@@ -327,6 +399,43 @@ export default function CheckoutPage() {
           </div>
         )}
 
+        {/* Invalid Seats Warning */}
+        {invalidSeats.length > 0 && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <div className="flex items-start gap-3">
+              <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium text-red-800">Some seats are no longer available</p>
+                <p className="text-sm text-red-700 mt-1">
+                  These seats have been taken by another customer:
+                </p>
+                <ul className="text-sm text-red-600 mt-2 space-y-1">
+                  {invalidSeats.map((seat, idx) => (
+                    <li key={idx} className="flex items-center gap-2">
+                      <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
+                      <span className="font-medium">{seat.film_title}</span> — Seat {seat.seat_label}
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex gap-3 mt-3">
+                  <button
+                    onClick={handleRemoveInvalidSeats}
+                    className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    Remove Unavailable Seats
+                  </button>
+                  <Link
+                    href="/cart"
+                    className="px-4 py-2 border border-red-300 text-red-700 text-sm font-medium rounded-lg hover:bg-red-50 transition-colors"
+                  >
+                    Back to Cart
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Processing Error */}
         {processingError && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
@@ -365,17 +474,30 @@ export default function CheckoutPage() {
                         </p>
                         <p className="text-sm text-text-muted">{group.hallName}</p>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {group.items.map((item) => (
+                          {group.items.map((item) => {
+                            const invalid = isItemInvalid(item);
+                            return (
                             <div 
                               key={item.id}
-                              className="flex items-center gap-2 px-2 py-1 bg-gray-100 rounded text-sm"
+                              className={`flex items-center gap-2 px-2 py-1 rounded text-sm ${
+                                invalid ? 'bg-red-100 ring-1 ring-red-300' : 'bg-gray-100'
+                              }`}
                             >
-                              <span className="font-medium">{item.seatLabel}</span>
-                              <span className="text-text-muted">{formatCurrency(item.price)}</span>
+                              <span className={`font-medium ${invalid ? 'text-red-700' : ''}`}>
+                                {item.seatLabel}
+                                {invalid && (
+                                  <span className="ml-1 text-xs bg-red-600 text-white px-1.5 py-0.5 rounded-full">
+                                    Unavailable
+                                  </span>
+                                )}
+                              </span>
+                              <span className={invalid ? 'text-red-600 line-through' : 'text-text-muted'}>{formatCurrency(item.price)}</span>
+                              {!invalid && (
                               <span className="text-xs text-amber-600 flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
                                 {getTimeRemaining(item.expiresAt)}
                               </span>
+                              )}
                               <button
                                 onClick={() => removeItem(item.id)}
                                 className="text-red-500 hover:text-red-700"
@@ -383,7 +505,8 @@ export default function CheckoutPage() {
                                 <Trash2 className="w-3 h-3" />
                               </button>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -509,10 +632,20 @@ export default function CheckoutPage() {
 
               <button
                 onClick={handleCheckout}
-                disabled={isProcessing || items.length === 0}
+                disabled={isProcessing || items.length === 0 || invalidSeats.length > 0 || isValidating}
                 className="w-full py-4 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {isProcessing ? (
+                {isValidating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Validating seats...
+                  </>
+                ) : invalidSeats.length > 0 ? (
+                  <>
+                    <XCircle className="w-5 h-5" />
+                    Remove Unavailable Seats First
+                  </>
+                ) : isProcessing ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
                     Processing...

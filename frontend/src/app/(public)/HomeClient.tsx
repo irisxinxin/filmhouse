@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { format, add, sub } from 'date-fns';
-import { screeningsApi, filmsApi, programsApi } from '@/lib/api';
+import { filmsApi, programsApi } from '@/lib/api';
 import { HeroCarousel } from '@/components/home/HeroCarousel';
-import type { FilmWithScreenings, Film, Screening, Program } from '@/types';
-import { Calendar, Mail, X } from 'lucide-react';
+import type { Film, Screening, Program } from '@/types';
+import { Mail, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -20,32 +18,17 @@ function formatTime(dateStr: string) {
 }
 
 export default function HomeClient({
-  initialDateStr,
   initialFeaturedFilms,
-  initialFilmScreenings,
 }: {
-  initialDateStr: string;
+  initialDateStr?: string;
   initialFeaturedFilms: Film[];
-  initialFilmScreenings: FilmWithScreenings[];
+  initialFilmScreenings?: unknown;
 }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const programSlug = searchParams.get('program');
 
-  const [selectedDate, setSelectedDate] = useState(() => new Date(initialDateStr + 'T00:00:00'));
-  const dateStr = format(selectedDate, 'yyyy-MM-dd');
-
-  const goPrevDay = () => setSelectedDate((d) => sub(d, { days: 1 }));
-  const goNextDay = () => setSelectedDate((d) => add(d, { days: 1 }));
-
-  const handlePickDate = (value: string) => {
-    if (!value) return;
-    setSelectedDate(new Date(value + 'T00:00:00'));
-  };
-
-  const clearProgram = () => {
-    router.push('/', { scroll: false });
-  };
+  const clearProgram = () => router.push('/', { scroll: false });
 
   const { data: featuredFilms } = useQuery({
     queryKey: ['films', 'featured'],
@@ -57,7 +40,16 @@ export default function HomeClient({
     staleTime: 60_000,
   });
 
-  // Fetch the selected program details
+  // Fetch ALL films
+  const { data: allFilms, isLoading } = useQuery({
+    queryKey: ['films', 'all'],
+    queryFn: async () => {
+      const res = await filmsApi.list();
+      return res.data as Film[];
+    },
+    staleTime: 60_000,
+  });
+
   const { data: selectedProgram } = useQuery({
     queryKey: ['program', programSlug],
     queryFn: async () => {
@@ -69,23 +61,16 @@ export default function HomeClient({
     staleTime: 60_000,
   });
 
-  // Fetch all screenings for the date
-  const { data: allScreenings, isLoading } = useQuery({
-    queryKey: ['screenings', dateStr],
-    queryFn: async () => {
-      const res = await screeningsApi.getByDate(dateStr);
-      return res.data as FilmWithScreenings[];
-    },
-    initialData: dateStr === initialDateStr && !programSlug ? initialFilmScreenings : undefined,
-    staleTime: 30_000,
-  });
-
-  // Filter screenings by program if a program is selected
-  const filmScreenings = useFilteredScreenings(allScreenings, selectedProgram, programSlug);
+  // Filter by program if selected
+  const films = (() => {
+    if (!allFilms) return undefined;
+    if (!programSlug || !selectedProgram?.films) return allFilms;
+    const ids = new Set(selectedProgram.films.map((f) => f.id));
+    return allFilms.filter((f) => ids.has(f.id));
+  })();
 
   return (
     <div className="min-h-screen" style={{ background: '#DED4CC' }}>
-      {/* Hero Carousel */}
       <HeroCarousel films={featuredFilms || []} />
 
       {/* Program Filter Banner */}
@@ -97,47 +82,22 @@ export default function HomeClient({
                 <span className="text-xs tracking-widest uppercase font-bold text-primary/60">Program:</span>
                 <span className="text-sm font-display font-bold italic text-primary">{selectedProgram.name}</span>
               </div>
-              <button
-                onClick={clearProgram}
-                className="inline-flex items-center gap-1.5 text-xs tracking-wide uppercase font-semibold text-primary/70 hover:text-primary transition-colors"
-              >
-                Show All Films
-                <X className="w-3.5 h-3.5" />
+              <button onClick={clearProgram}
+                className="inline-flex items-center gap-1.5 text-xs tracking-wide uppercase font-semibold text-primary/70 hover:text-primary transition-colors">
+                Show All Films <X className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Date Selector - Sticky */}
+      {/* NOW SHOWING header */}
       <div className="sticky top-[88px] z-40 fh-surface backdrop-blur-sm fh-rule">
         <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="fh-datebar">
             <div className="fh-datebar-left">
-              <button type="button" className="fh-datebtn" aria-label="Previous day" onClick={goPrevDay}>
-                ◀
-              </button>
-              <div className="min-w-0">
-                <span className="fh-datelabel">SHOWING </span>
-                <span className="fh-datevalue">{format(selectedDate, 'EEEE do MMMM').toUpperCase()}</span>
-              </div>
-              <button type="button" className="fh-datebtn" aria-label="Next day" onClick={goNextDay}>
-                ▶
-              </button>
-              <div className="relative">
-                <button type="button" className="fh-datebtn" aria-label="Pick a date">
-                  <Calendar className="w-4 h-4" />
-                </button>
-                <input
-                  aria-label="Pick a date"
-                  type="date"
-                  className="fh-dateinput"
-                  value={dateStr}
-                  onChange={(e) => handlePickDate(e.target.value)}
-                />
-              </div>
+              <span className="fh-datelabel">NOW SHOWING</span>
             </div>
-
             <div className="fh-datebar-right hidden sm:flex">
               <Link href="/mailing-list" className="fh-mailing-link">
                 <span>JOIN OUR MAILING LIST</span>
@@ -160,33 +120,21 @@ export default function HomeClient({
                     <div className="h-5 bg-white/30 rounded w-2/3" />
                     <div className="h-3 bg-white/30 rounded w-1/2" />
                     <div className="h-12 bg-white/30 rounded" />
-                    <div className="flex gap-2 mt-auto">
-                      <div className="h-7 w-16 bg-white/30 rounded" />
-                      <div className="h-7 w-16 bg-white/30 rounded" />
-                    </div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        ) : filmScreenings && filmScreenings.length > 0 ? (
+        ) : films && films.length > 0 ? (
           <div className="fh-film-grid">
-            {filmScreenings.map(({ film, screenings }, idx) => (
-              <FilmCard key={film.id} film={film} screenings={screenings} priority={idx < 4} />
+            {films.map((film, idx) => (
+              <FilmCard key={film.id} film={film} priority={idx < 4} />
             ))}
           </div>
         ) : (
           <div className="py-16 text-center">
-            <Calendar className="w-12 h-12 text-primary/30 mx-auto mb-4" />
-            <h3 className="text-lg font-display font-semibold text-text-primary mb-2">No screenings available</h3>
-            <p className="text-sm text-text-secondary">
-              {programSlug ? 'No screenings for this program on this date.' : 'Try selecting a different date above.'}
-            </p>
-            {programSlug && (
-              <button onClick={clearProgram} className="mt-4 fh-btn-outline">
-                Show All Films
-              </button>
-            )}
+            <h3 className="text-lg font-display font-semibold text-text-primary mb-2">No films available</h3>
+            <p className="text-sm text-text-secondary">Check back soon for new screenings.</p>
           </div>
         )}
       </section>
@@ -194,59 +142,37 @@ export default function HomeClient({
   );
 }
 
-/** Filter screenings by program films */
-function useFilteredScreenings(
-  allScreenings: FilmWithScreenings[] | undefined,
-  selectedProgram: Program | null | undefined,
-  programSlug: string | null,
-): FilmWithScreenings[] | undefined {
-  if (!allScreenings) return undefined;
-  if (!programSlug || !selectedProgram?.films) return allScreenings;
-
-  const programFilmIds = new Set(selectedProgram.films.map((f) => f.id));
-  return allScreenings.filter(({ film }) => programFilmIds.has(film.id));
-}
-
-function FilmCard({
-  film,
-  screenings,
-  priority,
-}: {
-  film: Film;
-  screenings: Screening[];
-  priority?: boolean;
-}) {
+function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
   const posterUrl = film.poster_url || null;
+
+  // Fetch upcoming screenings for this film
+  const { data: screenings } = useQuery({
+    queryKey: ['film-screenings-home', film.id],
+    queryFn: async () => {
+      const res = await filmsApi.getScreenings(film.id);
+      return (res.data || []) as Screening[];
+    },
+    staleTime: 60_000,
+  });
+
+  const upcomingScreenings = (screenings || []).slice(0, 4);
 
   return (
     <article className="fh-film-card flex flex-col">
       <div className="flex flex-1">
-        {/* Poster */}
-        <Link
-          href={`/film/${film.slug}`}
-          className="group relative w-[220px] sm:w-[280px] shrink-0 overflow-hidden bg-white/30 aspect-[2/3]"
-        >
+        <Link href={`/film/${film.slug}`}
+          className="group relative w-[220px] sm:w-[280px] shrink-0 overflow-hidden bg-white/30 aspect-[2/3]">
           {posterUrl ? (
-            <Image
-              src={posterUrl}
-              alt={film.title}
-              fill
-              className="object-cover"
-              sizes="280px"
-              priority={!!priority}
-            />
+            <Image src={posterUrl} alt={film.title} fill className="object-cover" sizes="280px" priority={!!priority} />
           ) : (
             <div className="w-full h-full bg-white/20" />
           )}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
         </Link>
 
-        {/* Content */}
         <div className="fh-card-content min-w-0 flex-1 p-4 sm:p-5 flex flex-col transition-all duration-300">
           <Link href={`/film/${film.slug}`}>
-            <h3 className="fh-card-title">
-              {film.title}
-            </h3>
+            <h3 className="fh-card-title">{film.title}</h3>
           </Link>
 
           <div className="fh-card-meta">
@@ -255,40 +181,26 @@ function FilmCard({
             <span>{film.duration}mins</span>
             <span className="fh-meta-sep">|</span>
             <span>({film.rating})</span>
-            {film.genre ? (
-              <>
-                <span className="fh-meta-sep">|</span>
-                <span>{film.genre}</span>
-              </>
-            ) : null}
+            {film.genre && (<><span className="fh-meta-sep">|</span><span>{film.genre}</span></>)}
           </div>
 
-          {film.synopsis ? (
-            <p className="fh-card-synopsis">
-              {film.synopsis}
-            </p>
-          ) : null}
+          {film.synopsis && <p className="fh-card-synopsis">{film.synopsis}</p>}
 
-          {/* Showtimes */}
-          <div className="mt-auto pt-3 flex flex-wrap items-center gap-2">
-            {screenings.slice(0, 4).map((screening) => (
-              <Link key={screening.id} href={`/book/${screening.id}`} className="fh-pill-solid">
-                {formatTime(screening.start_time)}
-              </Link>
-            ))}
+          {/* Upcoming showtimes */}
+          {upcomingScreenings.length > 0 && (
+            <div className="mt-auto pt-3 flex flex-wrap items-center gap-2">
+              {upcomingScreenings.map((s) => (
+                <Link key={s.id} href={`/book/${s.id}`} className="fh-pill-solid">
+                  {formatTime(s.start_time)}
+                </Link>
+              ))}
+              {film.is_4k && <span className="fh-badge-4k">4K</span>}
+            </div>
+          )}
 
-            {film.is_4k && (
-              <span className="fh-badge-4k">4K</span>
-            )}
-          </div>
-
-          {/* Other dates */}
           <div className="fh-card-dates pt-3 transition-all duration-300">
-            <Link
-              href={`/film/${film.slug}`}
-              className="fh-btn-outline-red"
-            >
-              Other dates
+            <Link href={`/film/${film.slug}`} className="fh-btn-outline-red">
+              Book tickets
             </Link>
           </div>
         </div>
