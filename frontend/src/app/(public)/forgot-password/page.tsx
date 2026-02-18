@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
             </p>
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 text-[#8B2332] hover:underline"
+              className="inline-flex items-center gap-2 text-[#910101] hover:underline"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Login
@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B2332] focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#910101] focus:border-transparent"
                 />
               </div>
             </div>
@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-[#8B2332] text-white rounded-lg font-medium hover:bg-[#6d1c28] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-[#910101] text-white rounded-lg font-medium hover:bg-[#700101] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Sending...' : 'Send Reset Link'}
             </button>
@@ -113,7 +113,7 @@ export default function ForgotPasswordPage() {
           <div className="mt-6 text-center">
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 text-[#8B2332] hover:underline"
+              className="inline-flex items-center gap-2 text-[#910101] hover:underline"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Login

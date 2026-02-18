@@ -3,9 +3,9 @@
 @theme {
   /* Filmhouse brand colors - light theme */
   --color-cream: #FAF8F5;
-  --color-primary: #8B2332;
-  --color-primary-dark: #6B1A26;
-  --color-primary-light: #A52D3F;
+  --color-primary: #910101;
+  --color-primary-dark: #700101;
+  --color-primary-light: #B01010;
   --color-accent: #D4A574;
   --color-accent-dark: #B8956A;
   
@@ -20,7 +20,7 @@
   --color-dark-card: #242424;
   
   /* Fonts */
-  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-sans: var(--font-figtree), system-ui, sans-serif;
   --font-display: var(--font-playfair), Georgia, serif;
   
   /* Animations */
@@ -101,6 +101,7 @@ body {
     gap: 0.25rem;
     padding: 0.5rem 0.85rem;
     font-size: 1.0625rem;
+    font-weight: 600;
     letter-spacing: 0.02em;
     color: rgba(255, 255, 255, 0.88);
     white-space: nowrap;
@@ -127,7 +128,7 @@ body {
   }
 
   .fh-rule {
-    border-top: 1px solid rgba(139, 35, 50, 0.35);
+    border-top: 1px solid rgba(145, 1, 1, 0.35);
   }
 
   /* ── Date bar ── */
@@ -172,7 +173,7 @@ body {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-weight: 800;
-    color: rgba(139, 35, 50, 0.95);
+    color: rgba(145, 1, 1, 0.95);
     white-space: nowrap;
   }
 
@@ -326,7 +327,7 @@ body {
 
   /* ── Film card (2-col grid) ── */
   .fh-film-card {
-    border: 1px solid rgba(139, 35, 50, 0.3);
+    border: 1px solid rgba(145, 1, 1, 0.3);
     background: transparent;
     overflow: hidden;
   }
@@ -345,7 +346,7 @@ body {
     }
 
     .fh-film-grid .fh-film-card {
-      border: 1px solid rgba(139, 35, 50, 0.3);
+      border: 1px solid rgba(145, 1, 1, 0.3);
     }
   }
 
@@ -429,7 +430,7 @@ body {
   .input:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(139, 35, 50, 0.1);
+    box-shadow: 0 0 0 3px rgba(145, 1, 1, 0.1);
   }
 
   /* ── Cards ── */
@@ -486,5 +487,5 @@ body {
 }
 
 ::selection {
-  background: rgba(139, 35, 50, 0.2);
+  background: rgba(145, 1, 1, 0.2);
 }
