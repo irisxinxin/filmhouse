@@ -534,13 +534,33 @@ body {
     }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 639px) {
+    .fh-detail-layout {
+      flex-direction: column;
+      gap: 16px;
+    }
     .fh-detail-poster {
-      width: 200px;
+      width: 180px;
       margin: 0 auto;
     }
     .fh-detail-info {
       padding-right: 0;
+      width: 100%;
+    }
+    .fh-detail-screenings {
+      width: 100%;
+    }
+    .fh-detail-synopsis {
+      font-size: 14px;
+      line-height: 20px;
+    }
+    .fh-detail-credits {
+      font-size: 15px;
+      line-height: 22px;
+    }
+    .fh-detail-awards {
+      text-align: left;
+      font-size: 13px;
     }
   }
 
