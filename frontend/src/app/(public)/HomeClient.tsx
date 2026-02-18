@@ -243,27 +243,27 @@ function FilmCard({
         {/* Content */}
         <div className="min-w-0 flex-1 p-3 sm:p-4 flex flex-col">
           <Link href={`/film/${film.slug}`}>
-            <h3 className="text-base sm:text-lg font-display font-bold italic text-primary leading-tight hover:text-primary-dark transition-colors">
+            <h3 className="text-base sm:text-[17px] font-display font-bold text-primary leading-tight hover:text-primary-dark transition-colors">
               {film.title}
             </h3>
           </Link>
 
-          <div className="mt-1 text-xs sm:text-sm text-text-secondary leading-relaxed">
-            <span className="font-semibold text-text-primary">{film.year}</span>
-            <span className="mx-1">|</span>
+          <div className="mt-1.5 text-[13px] text-text-secondary leading-relaxed">
+            <span className="font-bold text-text-primary">{film.year}</span>
+            <span className="mx-1.5">|</span>
             <span>{film.duration}mins</span>
-            <span className="mx-1">|</span>
+            <span className="mx-1.5">|</span>
             <span>({film.rating})</span>
             {film.genre ? (
               <>
-                <span className="mx-1">|</span>
+                <span className="mx-1.5">|</span>
                 <span>{film.genre}</span>
               </>
             ) : null}
           </div>
 
           {film.synopsis ? (
-            <p className="mt-2 text-xs sm:text-sm text-text-secondary leading-relaxed line-clamp-3">
+            <p className="mt-2 text-[13px] text-text-primary/80 leading-relaxed line-clamp-3">
               {film.synopsis}
             </p>
           ) : null}
