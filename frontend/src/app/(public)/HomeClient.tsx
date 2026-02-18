@@ -142,6 +142,17 @@ export default function HomeClient({
   );
 }
 
+function formatShortDate(dateStr: string) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(now.getDate() + 1);
+
+  if (d.toDateString() === now.toDateString()) return 'Today';
+  if (d.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+  return d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
 function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
   const posterUrl = film.poster_url || null;
 
@@ -155,7 +166,15 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
     staleTime: 60_000,
   });
 
-  const upcomingScreenings = (screenings || []).slice(0, 4);
+  const upcomingScreenings = (screenings || []).slice(0, 6);
+
+  // Group screenings by date
+  const screeningsByDate = upcomingScreenings.reduce((acc, s) => {
+    const dateKey = new Date(s.start_time).toDateString();
+    if (!acc[dateKey]) acc[dateKey] = [];
+    acc[dateKey].push(s);
+    return acc;
+  }, {} as Record<string, Screening[]>);
 
   return (
     <article className="fh-film-card flex flex-col">
@@ -186,13 +205,20 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
 
           {film.synopsis && <p className="fh-card-synopsis">{film.synopsis}</p>}
 
-          {/* Upcoming showtimes */}
-          {upcomingScreenings.length > 0 && (
-            <div className="mt-auto pt-3 flex flex-wrap items-center gap-2">
-              {upcomingScreenings.map((s) => (
-                <Link key={s.id} href={`/book/${s.id}`} className="fh-pill-solid">
-                  {formatTime(s.start_time)}
-                </Link>
+          {/* Upcoming showtimes grouped by date */}
+          {Object.keys(screeningsByDate).length > 0 && (
+            <div className="mt-auto pt-3 space-y-2">
+              {Object.entries(screeningsByDate).map(([dateKey, dateSessions]) => (
+                <div key={dateKey} className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary min-w-[70px]">
+                    {formatShortDate(dateSessions[0].start_time)}
+                  </span>
+                  {dateSessions.map((s) => (
+                    <Link key={s.id} href={`/book/${s.id}`} className="fh-pill-solid">
+                      {formatTime(s.start_time)}
+                    </Link>
+                  ))}
+                </div>
               ))}
               {film.is_4k && <span className="fh-badge-4k">4K</span>}
             </div>
