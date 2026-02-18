@@ -177,10 +177,10 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
   }, {} as Record<string, Screening[]>);
 
   return (
-    <article className="fh-film-card flex flex-col">
-      <div className="flex flex-1">
+    <article className="fh-film-card">
+      <div className="flex h-[420px]">
         <Link href={`/film/${film.slug}`}
-          className="group relative w-[220px] sm:w-[280px] shrink-0 overflow-hidden bg-white/30 aspect-[2/3]">
+          className="group relative w-[220px] sm:w-[280px] shrink-0 overflow-hidden bg-white/30">
           {posterUrl ? (
             <Image src={posterUrl} alt={film.title} fill className="object-cover" sizes="280px" priority={!!priority} />
           ) : (
@@ -189,7 +189,7 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
         </Link>
 
-        <div className="fh-card-content min-w-0 flex-1 p-4 sm:p-5 flex flex-col transition-all duration-300">
+        <div className="fh-card-content min-w-0 flex-1 p-4 sm:p-5 overflow-hidden transition-all duration-300">
           <Link href={`/film/${film.slug}`}>
             <h3 className="fh-card-title">{film.title}</h3>
           </Link>
@@ -207,9 +207,9 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
 
           {/* Upcoming showtimes grouped by date */}
           {Object.keys(screeningsByDate).length > 0 && (
-            <div className="mt-auto pt-3 space-y-2">
-              {Object.entries(screeningsByDate).map(([dateKey, dateSessions]) => (
-                <div key={dateKey} className="flex flex-wrap items-center gap-2">
+            <div className="mt-auto pt-3 space-y-1.5">
+              {Object.entries(screeningsByDate).slice(0, 3).map(([dateKey, dateSessions]) => (
+                <div key={dateKey} className="flex flex-wrap items-center gap-1.5">
                   <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary min-w-[70px]">
                     {formatShortDate(dateSessions[0].start_time)}
                   </span>
