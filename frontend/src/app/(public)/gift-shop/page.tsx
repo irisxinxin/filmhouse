@@ -86,22 +86,22 @@ export default function GiftShopPage() {
   const cartCount = cart.reduce((sum, item) => sum + item.qty, 0);
 
   return (
-    <div className="min-h-screen" style={{ background: '#DED4CC' }}>
+    <div className="min-h-screen bg-cream">
       {/* Hero */}
       <div className="bg-primary text-white py-16">
-        <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <Gift className="w-10 h-10" />
                 <h1 className="text-4xl md:text-5xl font-display font-bold">Gift Shop</h1>
               </div>
-              <p className="text-xl text-[#DED4CC] max-w-2xl">
+              <p className="text-xl text-white/80 max-w-2xl">
                 Take home a piece of the cinema experience. From gift cards to exclusive merchandise.
               </p>
             </div>
             {cartCount > 0 && (
-              <button className="relative p-3 bg-white/10 hover:bg-white/20 transition-colors">
+              <button className="relative p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
                 <ShoppingBag className="w-6 h-6" />
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-primary text-xs font-bold rounded-full flex items-center justify-center">
                   {cartCount}
@@ -113,16 +113,16 @@ export default function GiftShopPage() {
       </div>
 
       {/* Categories */}
-      <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-wrap gap-2">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 text-sm font-semibold uppercase transition-all border ${
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 cat === selectedCategory
-                  ? 'bg-primary text-[#DED4CC] border-primary'
-                  : 'bg-transparent text-primary border-primary hover:bg-primary hover:text-[#DED4CC]'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/25'
+                  : 'bg-white text-text-secondary hover:bg-gray-50 border border-gray-200'
               }`}
             >
               {cat}
@@ -132,7 +132,7 @@ export default function GiftShopPage() {
       </div>
 
       {/* Products Grid */}
-      <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => (
             <ProductCard 
@@ -145,14 +145,14 @@ export default function GiftShopPage() {
       </div>
 
       {/* Gift Card CTA */}
-      <div className="bg-primary text-white py-16">
-        <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="bg-gradient-to-r from-primary to-primary-dark text-white py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <CreditCard className="w-16 h-16 mx-auto mb-4 opacity-80" />
           <h2 className="text-3xl font-display font-bold mb-4">Give the Gift of Cinema</h2>
-          <p className="text-[#DED4CC]/80 mb-6 max-w-md mx-auto">
+          <p className="text-white/80 mb-6 max-w-md mx-auto">
             Filmhouse gift cards never expire and can be used for tickets, concessions, and merchandise.
           </p>
-          <button className="bg-[#DED4CC] text-primary px-8 py-3 font-semibold uppercase hover:bg-white transition-all border border-[#DED4CC]">
+          <button className="bg-white text-primary px-8 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-all hover:scale-[1.02] active:scale-[0.98]">
             Buy Gift Card
           </button>
         </div>
@@ -178,7 +178,7 @@ function ProductCard({
   };
 
   return (
-    <div className="bg-[#0f1223] overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group">
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group">
       <div className="relative aspect-[4/3] overflow-hidden">
         <Image
           src={product.image}
@@ -187,11 +187,11 @@ function ProductCard({
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute top-3 left-3 flex gap-2">
-          <span className="bg-[#fcf4d1] text-[#0f1223] text-xs font-semibold px-2.5 py-1">
+          <span className="bg-white/90 backdrop-blur-sm text-xs font-medium px-2.5 py-1 rounded-full text-text-secondary">
             {product.category}
           </span>
           {product.badge && (
-            <span className={`text-xs font-bold px-2.5 py-1 ${
+            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
               product.badge === 'Popular' ? 'bg-primary text-white' :
               product.badge === 'New' ? 'bg-emerald-500 text-white' :
               'bg-blue-500 text-white'
@@ -202,8 +202,8 @@ function ProductCard({
         </div>
       </div>
       <div className="p-5">
-        <h3 className="font-semibold text-[#fcf4d1] mb-1 line-clamp-1">{product.name}</h3>
-        <p className="text-sm text-[#fcf4d1]/60 mb-4 line-clamp-2">{product.description}</p>
+        <h3 className="font-semibold text-text-primary mb-1 line-clamp-1">{product.name}</h3>
+        <p className="text-sm text-text-muted mb-4 line-clamp-2">{product.description}</p>
         
         {/* Variants */}
         {product.variants && (
@@ -212,10 +212,10 @@ function ProductCard({
               <button
                 key={v}
                 onClick={() => setSelectedVariant(v)}
-                className={`text-xs px-3 py-1.5 font-medium transition-all ${
+                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
                   selectedVariant === v
-                    ? 'bg-[#fcf4d1] text-[#0f1223]'
-                    : 'bg-[#172234] text-[#fcf4d1]/70 hover:bg-[#fcf4d1]/20'
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
                 }`}
               >
                 ${v}
@@ -225,16 +225,16 @@ function ProductCard({
         )}
         
         <div className="flex items-center justify-between">
-          <span className="text-xl font-bold text-[#fcf4d1]">
+          <span className="text-xl font-bold text-primary">
             ${product.variants ? selectedVariant : product.price}
           </span>
           <button 
             onClick={handleAdd}
             disabled={added}
-            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold uppercase transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
               added 
                 ? 'bg-emerald-500 text-white' 
-                : 'bg-primary text-[#DED4CC] hover:bg-[#DED4CC] hover:text-primary border border-primary'
+                : 'bg-primary text-white hover:bg-primary-dark'
             }`}
           >
             {added ? (
