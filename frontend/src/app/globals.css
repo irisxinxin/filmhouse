@@ -479,6 +479,123 @@ body {
     color: #fff;
   }
 
+  /* ── Film detail page (3-col layout like filmhouse.sg) ── */
+  .fh-detail-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+  }
+
+  .fh-detail-poster {
+    width: 290px;
+    flex-shrink: 0;
+  }
+
+  .fh-detail-info {
+    flex: 1;
+    min-width: 0;
+    padding-right: 20px;
+  }
+
+  .fh-detail-screenings {
+    width: 327px;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 1024px) {
+    .fh-detail-layout {
+      gap: 20px;
+    }
+    .fh-detail-poster {
+      width: 220px;
+    }
+    .fh-detail-screenings {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .fh-detail-poster {
+      width: 200px;
+      margin: 0 auto;
+    }
+    .fh-detail-info {
+      padding-right: 0;
+    }
+  }
+
+  .fh-detail-meta {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 5px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    font-size: 16px;
+    line-height: 28px;
+    font-weight: 500;
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+  }
+
+  .fh-detail-meta li {
+    padding-right: 8px;
+  }
+
+  .fh-detail-meta li:not(:last-child)::after {
+    content: none;
+  }
+
+  .fh-detail-credits {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 26px;
+    color: var(--color-text-primary);
+    margin: 0 0 20px;
+  }
+
+  .fh-detail-credits span {
+    display: block;
+  }
+
+  .fh-detail-synopsis {
+    font-size: 16px;
+    line-height: 22px;
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    margin: 0 0 15px;
+  }
+
+  .fh-detail-language {
+    font-size: 15px;
+    font-style: italic;
+    color: var(--color-text-primary);
+    opacity: 0.75;
+    margin: 0 0 15px;
+  }
+
+  .fh-detail-awards {
+    font-size: 14px;
+    font-style: italic;
+    color: var(--color-text-primary);
+    opacity: 0.7;
+    text-align: right;
+    margin: 10px 0;
+  }
+
+  .fh-detail-daterow {
+    margin-bottom: 12px;
+  }
+
+  .fh-detail-dateheading {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 6px;
+    font-family: var(--font-display);
+  }
+
   /* ── General buttons ── filmhouse.sg: uppercase, border-radius 0, padding 15px 25px */
   .btn {
     display: inline-flex;
