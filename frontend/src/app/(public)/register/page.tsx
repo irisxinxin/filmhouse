@@ -31,7 +31,6 @@ export default function RegisterPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
   };
 
   const passwordStrength = () => {
