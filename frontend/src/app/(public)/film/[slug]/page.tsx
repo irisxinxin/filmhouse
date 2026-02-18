@@ -21,21 +21,13 @@ export default function FilmDetailPage() {
     },
   });
 
+  // Fetch ALL upcoming screenings for this film (single request, no date filter)
   const { data: allScreenings } = useQuery({
     queryKey: ['film-all-screenings', film?.id],
     queryFn: async () => {
       if (!film?.id) return [];
-      const results: Screening[] = [];
-      for (let i = 0; i < 14; i++) {
-        const d = new Date();
-        d.setDate(d.getDate() + i);
-        const dateStr = d.toISOString().split('T')[0];
-        try {
-          const res = await filmsApi.getScreenings(film.id, dateStr);
-          if (res.data && Array.isArray(res.data)) results.push(...res.data);
-        } catch { /* skip */ }
-      }
-      return results;
+      const res = await filmsApi.getScreenings(film.id);
+      return (res.data || []) as Screening[];
     },
     enabled: !!film?.id,
   });
