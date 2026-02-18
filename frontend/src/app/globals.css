@@ -240,24 +240,20 @@ body {
     align-items: center;
     justify-content: center;
     padding: 7px 10px;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 700;
     border-radius: 10px;
-    background: #fcf4d1;
-    color: #0f1223;
-    border: 2px solid #fcf4d1;
-    text-transform: uppercase;
+    background: var(--color-primary);
+    color: white;
+    border: 1px solid var(--color-primary);
     font-family: var(--font-sans);
     line-height: 16px;
     transition: transform 120ms ease, background 120ms ease;
-    position: relative;
-    overflow: hidden;
   }
 
   .fh-pill-solid:hover {
-    background: #0f1223;
-    color: #fcf4d1;
-    border-color: #fcf4d1;
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
     transform: translateY(-1px);
   }
 
@@ -367,8 +363,7 @@ body {
   }
 
   .fh-card-content {
-    background: #0f1223;
-    color: #fcf4d1;
+    background: transparent;
     transition: background 300ms ease, color 300ms ease;
   }
 
@@ -376,7 +371,7 @@ body {
     font-family: var(--font-display);
     font-size: 28px;
     font-weight: 800;
-    color: #fcf4d1;
+    color: var(--color-primary);
     line-height: 1.1;
     letter-spacing: 0;
     text-transform: capitalize;
@@ -385,7 +380,7 @@ body {
   }
 
   .fh-card-title:hover {
-    color: #C8AC8F;
+    color: var(--color-primary-dark);
   }
 
   @media (max-width: 1024px) {
@@ -403,10 +398,10 @@ body {
   .fh-card-meta {
     margin-top: 0;
     margin-bottom: 5px;
-    font-size: 18px;
+    font-size: 16px;
     line-height: 22px;
-    color: #fcf4d1;
-    font-weight: 100;
+    color: var(--color-primary);
+    font-weight: 600;
     font-family: var(--font-sans);
     display: flex;
     flex-wrap: wrap;
@@ -420,10 +415,9 @@ body {
 
   .fh-card-synopsis {
     margin-top: 10px;
-    font-size: 18px;
-    line-height: 26px;
-    color: #fcf4d1;
-    font-weight: 100;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--color-primary);
     font-family: var(--font-sans);
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -431,18 +425,22 @@ body {
     overflow: hidden;
   }
 
-  /* Hover: content area turns dark navy */
+  /* Hover: content area turns dark navy, text turns cream */
   .fh-film-card:hover .fh-card-content {
-    background: #172234;
+    background: rgb(23, 35, 52);
+    color: #DED4CC;
   }
 
-  .fh-film-card:hover .fh-card-content .fh-card-title {
-    color: #C8AC8F;
+  .fh-film-card:hover .fh-card-content .fh-card-title,
+  .fh-film-card:hover .fh-card-content .fh-card-meta,
+  .fh-film-card:hover .fh-card-content .fh-card-meta span,
+  .fh-film-card:hover .fh-card-content .fh-card-synopsis {
+    color: #DED4CC !important;
   }
 
   .fh-film-card:hover .fh-card-content .fh-card-dates a {
-    color: #fcf4d1;
-    border-color: #fcf4d1;
+    color: #fff;
+    border-color: #fff;
   }
 
   .fh-film-grid {
@@ -464,21 +462,21 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 4px 9px;
-    font-size: 16px;
-    font-weight: 100;
-    border: 1px solid #fcf4d1;
-    color: #fcf4d1;
+    padding: 7px 10px 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary);
     background: transparent;
-    border-radius: 10px;
+    border-radius: 14px;
     line-height: 16px;
     font-family: var(--font-sans);
     transition: background 300ms ease, color 300ms ease;
   }
 
   .fh-btn-outline-red:hover {
-    background: #fcf4d1;
-    color: #0f1223;
+    background: var(--color-primary);
+    color: #fff;
   }
 
   /* ── General buttons ── filmhouse.sg: uppercase, border-radius 0, padding 15px 25px */
