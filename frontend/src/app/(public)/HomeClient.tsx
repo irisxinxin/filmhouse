@@ -114,7 +114,7 @@ export default function HomeClient({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="fh-film-card animate-pulse">
-                <div className="flex h-[240px]">
+                <div className="flex h-[380px]">
                   <div className="w-[280px] bg-white/30 shrink-0" />
                   <div className="flex-1 p-4 space-y-3">
                     <div className="h-5 bg-white/30 rounded w-2/3" />
@@ -178,7 +178,7 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
 
   return (
     <article className="fh-film-card">
-      <div className="flex h-[340px]">
+      <div className="flex h-[380px]">
         <Link href={`/film/${film.slug}`}
           className="group relative w-[220px] sm:w-[280px] shrink-0 overflow-hidden bg-white/30">
           {posterUrl ? (
