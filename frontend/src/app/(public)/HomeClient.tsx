@@ -177,8 +177,8 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
   }, {} as Record<string, Screening[]>);
 
   return (
-    <article className="fh-film-card h-full">
-      <div className="flex h-full">
+    <article className="fh-film-card h-full flex flex-col">
+      <div className="flex flex-1">
         <Link href={`/film/${film.slug}`}
           className="group relative w-[220px] sm:w-[280px] shrink-0 overflow-hidden bg-white/30">
           {posterUrl ? (
@@ -204,33 +204,32 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
           </div>
 
           {film.synopsis && <p className="fh-card-synopsis">{film.synopsis}</p>}
+        </div>
+      </div>
 
-          {/* Next screening date */}
+      {/* Bottom bar: date + showtimes + book */}
+      <div className="fh-card-bottom border-t border-primary/10 px-4 sm:px-5 py-3 flex items-center justify-between gap-3 transition-all duration-300">
+        <div className="flex flex-wrap items-center gap-1.5">
           {Object.keys(screeningsByDate).length > 0 && (() => {
-            const [dateKey, dateSessions] = Object.entries(screeningsByDate)[0];
+            const [, dateSessions] = Object.entries(screeningsByDate)[0];
             return (
-              <div className="mt-auto pt-3">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
-                    {formatShortDate(dateSessions[0].start_time)}
-                  </span>
-                  {dateSessions.map((s) => (
-                    <Link key={s.id} href={`/book/${s.id}`} className="fh-pill-solid">
-                      {formatTime(s.start_time)}
-                    </Link>
-                  ))}
-                  {film.is_4k && <span className="fh-badge-4k">4K</span>}
-                </div>
-              </div>
+              <>
+                <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
+                  {formatShortDate(dateSessions[0].start_time)}
+                </span>
+                {dateSessions.map((s) => (
+                  <Link key={s.id} href={`/book/${s.id}`} className="fh-pill-solid">
+                    {formatTime(s.start_time)}
+                  </Link>
+                ))}
+                {film.is_4k && <span className="fh-badge-4k">4K</span>}
+              </>
             );
           })()}
-
-          <div className="fh-card-dates pt-3 transition-all duration-300">
-            <Link href={`/film/${film.slug}`} className="fh-btn-outline-red">
-              Book tickets
-            </Link>
-          </div>
         </div>
+        <Link href={`/film/${film.slug}`} className="fh-btn-outline-red shrink-0">
+          Book tickets
+        </Link>
       </div>
     </article>
   );

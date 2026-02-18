@@ -422,10 +422,6 @@ body {
     line-height: 1.5;
     color: var(--color-primary);
     font-family: var(--font-sans);
-    display: -webkit-box;
-    -webkit-line-clamp: 5;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
   }
 
   /* Hover: content area turns dark navy, text turns cream */
@@ -442,6 +438,20 @@ body {
   }
 
   .fh-film-card:hover .fh-card-content .fh-card-dates a {
+    color: #fff;
+    border-color: #fff;
+  }
+
+  .fh-film-card:hover .fh-card-bottom {
+    background: rgb(23, 35, 52);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .fh-film-card:hover .fh-card-bottom span {
+    color: #DED4CC !important;
+  }
+
+  .fh-film-card:hover .fh-card-bottom a.fh-btn-outline-red {
     color: #fff;
     border-color: #fff;
   }
