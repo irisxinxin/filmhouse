@@ -242,14 +242,14 @@ function FilmCard({
         </Link>
 
         {/* Content */}
-        <div className="min-w-0 flex-1 p-3 sm:p-4 flex flex-col">
+        <div className="fh-card-content min-w-0 flex-1 p-4 sm:p-5 flex flex-col transition-all duration-300">
           <Link href={`/film/${film.slug}`}>
-            <h3 className="text-base sm:text-[17px] font-display font-bold text-primary leading-tight hover:text-primary-dark transition-colors">
+            <h3 className="text-xl sm:text-[28px] font-bold text-primary leading-tight hover:text-primary-dark transition-colors">
               {film.title}
             </h3>
           </Link>
 
-          <div className="mt-1.5 text-[13px] text-text-secondary leading-relaxed">
+          <div className="mt-1.5 text-[14px] text-text-secondary leading-relaxed">
             <span className="font-bold text-primary">{film.year}</span>
             <span className="mx-1.5"> | </span>
             <span>{film.duration}mins</span>
@@ -264,7 +264,7 @@ function FilmCard({
           </div>
 
           {film.synopsis ? (
-            <p className="mt-2 text-[13px] text-text-primary/80 leading-relaxed line-clamp-3">
+            <p className="mt-2 text-[14px] text-text-primary/80 leading-relaxed line-clamp-3">
               {film.synopsis}
             </p>
           ) : null}
@@ -285,7 +285,7 @@ function FilmCard({
       </div>
 
       {/* Other dates — bottom of card, after content area */}
-      <div className="border-t border-[rgba(145,1,1,0.15)] ml-[220px] sm:ml-[280px] px-3 sm:px-4 py-2">
+      <div className="fh-card-dates border-t border-[rgba(145,1,1,0.15)] ml-[220px] sm:ml-[280px] px-3 sm:px-4 py-2 transition-all duration-300">
         <Link
           href={`/film/${film.slug}`}
           className="fh-btn-outline-red"

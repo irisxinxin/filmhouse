@@ -213,8 +213,8 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.3rem 0.55rem;
-    font-size: 0.7rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     border-radius: 2px;
     background: var(--color-primary);
@@ -336,6 +336,28 @@ body {
   .fh-film-card:hover {
     box-shadow: 0 6px 20px rgba(0,0,0,0.15);
     border-color: rgba(145, 1, 1, 0.5);
+  }
+
+  /* Hover: right side turns dark blue, text turns gold */
+  .fh-film-card:hover .fh-card-content {
+    background: rgb(23, 35, 52);
+    color: #DED4CC;
+  }
+
+  .fh-film-card:hover .fh-card-content h3,
+  .fh-film-card:hover .fh-card-content h3 a,
+  .fh-film-card:hover .fh-card-content p,
+  .fh-film-card:hover .fh-card-content span {
+    color: #DED4CC !important;
+  }
+
+  .fh-film-card:hover .fh-card-dates {
+    background: rgb(23, 35, 52);
+  }
+
+  .fh-film-card:hover .fh-card-dates a {
+    color: #fff;
+    border-color: #fff;
   }
 
   .fh-film-grid {
