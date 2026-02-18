@@ -334,7 +334,8 @@ body {
   }
 
   .fh-film-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    border-color: rgba(145, 1, 1, 0.5);
   }
 
   .fh-film-grid {

@@ -91,7 +91,7 @@ export default function HomeClient({
       {/* Program Filter Banner */}
       {programSlug && selectedProgram && (
         <div className="bg-primary/10 border-b border-primary/20">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between py-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs tracking-widest uppercase font-bold text-primary/60">Program:</span>
@@ -111,7 +111,7 @@ export default function HomeClient({
 
       {/* Date Selector - Sticky */}
       <div className="sticky top-[72px] z-40 fh-surface backdrop-blur-sm fh-rule">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="fh-datebar">
             <div className="fh-datebar-left">
               <button type="button" className="fh-datebtn" aria-label="Previous day" onClick={goPrevDay}>
@@ -149,7 +149,7 @@ export default function HomeClient({
       </div>
 
       {/* Films Grid */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {[1, 2, 3, 4].map((i) => (
@@ -224,7 +224,7 @@ function FilmCard({
         {/* Poster — fills full card height */}
         <Link
           href={`/film/${film.slug}`}
-          className="group relative w-[220px] sm:w-[280px] shrink-0 overflow-hidden bg-white/30"
+          className="group relative w-[220px] sm:w-[280px] shrink-0 overflow-hidden bg-white/30 aspect-[2/3]"
         >
           {posterUrl ? (
             <Image
