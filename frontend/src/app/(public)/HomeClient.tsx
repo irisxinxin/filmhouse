@@ -84,14 +84,14 @@ export default function HomeClient({
   const filmScreenings = useFilteredScreenings(allScreenings, selectedProgram, programSlug);
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+    <div className="min-h-screen" style={{ background: '#DED4CC' }}>
       {/* Hero Carousel */}
       <HeroCarousel films={featuredFilms || []} />
 
       {/* Program Filter Banner */}
       {programSlug && selectedProgram && (
         <div className="bg-primary/10 border-b border-primary/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between py-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs tracking-widest uppercase font-bold text-primary/60">Program:</span>
@@ -110,8 +110,8 @@ export default function HomeClient({
       )}
 
       {/* Date Selector - Sticky */}
-      <div className="sticky top-[72px] z-40 fh-surface backdrop-blur-sm fh-rule">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-[88px] z-40 fh-surface backdrop-blur-sm fh-rule">
+        <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="fh-datebar">
             <div className="fh-datebar-left">
               <button type="button" className="fh-datebtn" aria-label="Previous day" onClick={goPrevDay}>
@@ -149,7 +149,7 @@ export default function HomeClient({
       </div>
 
       {/* Films Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <section className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {[1, 2, 3, 4].map((i) => (
@@ -221,7 +221,7 @@ function FilmCard({
   return (
     <article className="fh-film-card flex flex-col">
       <div className="flex flex-1">
-        {/* Poster — fills full card height */}
+        {/* Poster */}
         <Link
           href={`/film/${film.slug}`}
           className="group relative w-[220px] sm:w-[280px] shrink-0 overflow-hidden bg-white/30 aspect-[2/3]"
@@ -232,7 +232,7 @@ function FilmCard({
               alt={film.title}
               fill
               className="object-cover"
-              sizes="230px"
+              sizes="280px"
               priority={!!priority}
             />
           ) : (
@@ -244,34 +244,34 @@ function FilmCard({
         {/* Content */}
         <div className="fh-card-content min-w-0 flex-1 p-4 sm:p-5 flex flex-col transition-all duration-300">
           <Link href={`/film/${film.slug}`}>
-            <h3 className="text-xl sm:text-[28px] font-bold text-primary leading-tight hover:text-primary-dark transition-colors">
+            <h3 className="fh-card-title">
               {film.title}
             </h3>
           </Link>
 
-          <div className="mt-1.5 text-[14px] text-text-secondary leading-relaxed">
-            <span className="font-bold text-primary">{film.year}</span>
-            <span className="mx-1.5"> | </span>
+          <div className="fh-card-meta">
+            <span>{film.year}</span>
+            <span className="fh-meta-sep">|</span>
             <span>{film.duration}mins</span>
-            <span className="mx-1.5"> | </span>
+            <span className="fh-meta-sep">|</span>
             <span>({film.rating})</span>
             {film.genre ? (
               <>
-                <span className="mx-1.5"> | </span>
+                <span className="fh-meta-sep">|</span>
                 <span>{film.genre}</span>
               </>
             ) : null}
           </div>
 
           {film.synopsis ? (
-            <p className="mt-2 text-[14px] text-text-primary/80 leading-relaxed line-clamp-3">
+            <p className="fh-card-synopsis">
               {film.synopsis}
             </p>
           ) : null}
 
           {/* Showtimes */}
-          <div className="mt-auto pt-3 flex flex-wrap items-center gap-1.5">
-            {screenings.slice(0, 3).map((screening) => (
+          <div className="mt-auto pt-3 flex flex-wrap items-center gap-2">
+            {screenings.slice(0, 4).map((screening) => (
               <Link key={screening.id} href={`/book/${screening.id}`} className="fh-pill-solid">
                 {formatTime(screening.start_time)}
               </Link>
@@ -281,17 +281,17 @@ function FilmCard({
               <span className="fh-badge-4k">4K</span>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Other dates — bottom of card, after content area */}
-      <div className="fh-card-dates border-t border-[rgba(145,1,1,0.15)] ml-[220px] sm:ml-[280px] px-3 sm:px-4 py-2 transition-all duration-300">
-        <Link
-          href={`/film/${film.slug}`}
-          className="fh-btn-outline-red"
-        >
-          Other dates
-        </Link>
+          {/* Other dates */}
+          <div className="fh-card-dates pt-3 transition-all duration-300">
+            <Link
+              href={`/film/${film.slug}`}
+              className="fh-btn-outline-red"
+            >
+              Other dates
+            </Link>
+          </div>
+        </div>
       </div>
     </article>
   );

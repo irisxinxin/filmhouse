@@ -75,32 +75,32 @@ export default function MembershipPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen" style={{ background: '#DED4CC' }}>
       {/* Hero */}
-      <div className="bg-gradient-to-br from-primary via-primary to-primary-dark text-white py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-6">
+      <div className="bg-primary text-white py-20">
+        <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 text-sm mb-6">
             <Users className="w-4 h-4" />
             <span>Join 2,000+ members</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">
             Join the Filmhouse Family
           </h1>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto">
+          <p className="text-xl text-[#DED4CC] max-w-2xl mx-auto">
             Become a member and enjoy exclusive benefits, discounts, and access to special events.
           </p>
         </div>
       </div>
 
       {/* Benefits */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h2 className="text-2xl font-display font-bold text-center text-text-primary mb-12">
           Member Benefits
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
           {benefits.map((benefit) => (
             <div key={benefit.title} className="text-center group">
-              <div className="w-14 h-14 bg-primary/10 group-hover:bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-colors">
+              <div className="w-14 h-14 bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center mx-auto mb-3 transition-colors">
                 <benefit.icon className="w-7 h-7 text-primary" />
               </div>
               <h3 className="font-semibold text-text-primary mb-1">{benefit.title}</h3>
@@ -111,59 +111,59 @@ export default function MembershipPage() {
       </div>
 
       {/* Pricing Tiers */}
-      <div className="bg-white py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-display font-bold text-center text-text-primary mb-12">
+      <div className="bg-[#0f1223] py-16">
+        <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-display font-bold text-center text-[#fcf4d1] mb-12">
             Choose Your Membership
           </h2>
           <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
             {tiers.map((tier) => (
               <div
                 key={tier.name}
-                className={`relative rounded-2xl p-6 lg:p-8 transition-all duration-300 ${
+                className={`relative p-6 lg:p-8 transition-all duration-300 ${
                   tier.popular
-                    ? 'bg-primary text-white shadow-2xl shadow-primary/30 scale-[1.02] md:scale-105'
-                    : 'bg-cream border border-gray-200 hover:border-gray-300 hover:shadow-lg'
+                    ? 'bg-primary text-white shadow-2xl scale-[1.02] md:scale-105'
+                    : 'bg-[#172234] border border-[#fcf4d1]/20 hover:border-[#fcf4d1]/40'
                 }`}
               >
                 {tier.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-amber-900 text-xs font-bold px-4 py-1.5 rounded-full shadow-lg">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#fcf4d1] text-[#0f1223] text-xs font-bold px-4 py-1.5 shadow-lg uppercase">
                     Most Popular
                   </span>
                 )}
-                <h3 className={`text-2xl font-bold mb-2 ${tier.popular ? 'text-white' : 'text-text-primary'}`}>
+                <h3 className={`text-2xl font-bold mb-2 ${tier.popular ? 'text-white' : 'text-[#fcf4d1]'}`}>
                   {tier.name}
                 </h3>
-                <p className={`text-sm mb-4 ${tier.popular ? 'text-white/80' : 'text-text-muted'}`}>
+                <p className={`text-sm mb-4 ${tier.popular ? 'text-white/80' : 'text-[#fcf4d1]/60'}`}>
                   {tier.description}
                 </p>
                 <div className="mb-6">
-                  <span className={`text-4xl font-bold ${tier.popular ? 'text-white' : 'text-primary'}`}>
+                  <span className={`text-4xl font-bold ${tier.popular ? 'text-white' : 'text-[#fcf4d1]'}`}>
                     ${tier.price}
                   </span>
-                  <span className={tier.popular ? 'text-white/80' : 'text-text-muted'}>
+                  <span className={tier.popular ? 'text-white/80' : 'text-[#fcf4d1]/60'}>
                     {tier.period}
                   </span>
                 </div>
                 <ul className="space-y-3 mb-8">
                   {tier.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                        tier.popular ? 'bg-white/20' : 'bg-primary/10'
+                      <div className={`w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        tier.popular ? 'bg-white/20' : 'bg-[#fcf4d1]/10'
                       }`}>
-                        <Check className={`w-3 h-3 ${tier.popular ? 'text-white' : 'text-primary'}`} />
+                        <Check className={`w-3 h-3 ${tier.popular ? 'text-white' : 'text-[#fcf4d1]'}`} />
                       </div>
-                      <span className={`text-sm ${tier.popular ? 'text-white/90' : 'text-text-secondary'}`}>
+                      <span className={`text-sm ${tier.popular ? 'text-white/90' : 'text-[#fcf4d1]/80'}`}>
                         {feature}
                       </span>
                     </li>
                   ))}
                 </ul>
                 <button
-                  className={`w-full py-3 rounded-xl font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                  className={`w-full py-3 font-semibold uppercase transition-all hover:scale-[1.02] active:scale-[0.98] ${
                     tier.popular
-                      ? 'bg-white text-primary hover:bg-gray-100'
-                      : 'bg-primary text-white hover:bg-primary-dark'
+                      ? 'bg-[#DED4CC] text-primary hover:bg-white'
+                      : 'bg-primary text-[#DED4CC] hover:bg-[#DED4CC] hover:text-primary border border-primary'
                   }`}
                 >
                   {tier.cta}
@@ -183,7 +183,7 @@ export default function MembershipPage() {
           {faqs.map((faq, i) => (
             <div 
               key={i} 
-              className="bg-white rounded-xl overflow-hidden shadow-sm"
+              className="bg-white/80 overflow-hidden"
             >
               <button
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
@@ -205,15 +205,15 @@ export default function MembershipPage() {
       </div>
 
       {/* CTA */}
-      <div className="bg-dark text-white py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-display font-bold mb-4">Ready to Join?</h2>
+      <div className="bg-[#24231D] text-white py-16">
+        <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-display font-bold text-[#C8AC8F] mb-4">Ready to Join?</h2>
           <p className="text-white/70 mb-6 max-w-md mx-auto">
             Start enjoying member benefits today. Sign up takes less than a minute.
           </p>
           <Link 
             href="/register"
-            className="inline-block px-8 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-all hover:scale-[1.02]"
+            className="inline-block px-8 py-3 bg-primary text-[#DED4CC] font-semibold uppercase hover:bg-[#DED4CC] hover:text-primary transition-all border border-primary"
           >
             Get Started
           </Link>

@@ -65,15 +65,15 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-primary">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-[72px]">
+      <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-[88px]">
           {/* Logo */}
           <div className="flex items-center">
             <Logo
               priority
               width={176}
               height={90}
-              imageClassName="h-9 w-auto"
+              imageClassName="h-12 w-auto"
               className="block"
             />
           </div>
@@ -95,19 +95,18 @@ export function Header() {
               </Link>
               {filmsDropdownOpen && (
                 <div className="absolute left-0 top-full pt-1 z-50">
-                  <div className="bg-white rounded shadow-xl py-1.5 min-w-[220px] animate-slide-down">
+                  <div className="bg-[#172234] shadow-xl py-0 min-w-[220px] animate-slide-down">
                     <Link
                       href="/"
-                      className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors font-medium"
+                      className="block px-[18px] py-2 text-[16px] font-semibold lowercase text-[#DED4CC] hover:bg-[#988773] hover:text-white transition-colors border-b border-[#98877385]"
                     >
-                      All Films
+                      all films
                     </Link>
-                    <hr className="my-1 border-gray-100" />
-                    {programs?.map((program) => (
+                    {programs?.map((program, idx) => (
                       <Link
                         key={program.id}
                         href={`/?program=${program.slug}`}
-                        className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
+                        className={`block px-[18px] py-2 text-[16px] font-semibold lowercase text-[#DED4CC] hover:bg-[#988773] hover:text-white transition-colors ${idx < (programs?.length ?? 0) - 1 ? 'border-b border-[#98877385]' : ''}`}
                       >
                         {program.name}
                       </Link>
@@ -160,36 +159,35 @@ export function Header() {
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded shadow-xl py-2 animate-slide-down">
+                <div className="absolute right-0 mt-2 w-48 bg-[#172234] shadow-xl py-0 animate-slide-down">
                   {isAuthenticated ? (
                     <>
-                      <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">{user?.first_name} {user?.last_name}</p>
-                        <p className="text-xs text-gray-500">{user?.email}</p>
+                      <div className="px-[18px] py-2 border-b border-[#98877385]">
+                        <p className="text-sm font-semibold text-[#DED4CC]">{user?.first_name} {user?.last_name}</p>
+                        <p className="text-xs text-[#DED4CC]/60">{user?.email}</p>
                       </div>
-                      <Link href="/bookings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                        My Bookings
+                      <Link href="/bookings" className="block px-[18px] py-2 text-[16px] font-semibold lowercase text-[#DED4CC] hover:bg-[#988773] hover:text-white transition-colors border-b border-[#98877385]">
+                        my bookings
                       </Link>
                       {user?.role === 'admin' && (
-                        <Link href="/admin" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                          Admin Panel
+                        <Link href="/admin" className="block px-[18px] py-2 text-[16px] font-semibold lowercase text-[#DED4CC] hover:bg-[#988773] hover:text-white transition-colors border-b border-[#98877385]">
+                          admin panel
                         </Link>
                       )}
-                      <hr className="my-1" />
                       <button
                         onClick={logout}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        className="block w-full text-left px-[18px] py-2 text-[16px] font-semibold lowercase text-[#DED4CC] hover:bg-[#988773] hover:text-white transition-colors"
                       >
-                        Sign Out
+                        sign out
                       </button>
                     </>
                   ) : (
                     <>
-                      <Link href="/login" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                        Sign In
+                      <Link href="/login" className="block px-[18px] py-2 text-[16px] font-semibold lowercase text-[#DED4CC] hover:bg-[#988773] hover:text-white transition-colors border-b border-[#98877385]">
+                        sign in
                       </Link>
-                      <Link href="/register" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                        Create Account
+                      <Link href="/register" className="block px-[18px] py-2 text-[16px] font-semibold lowercase text-[#DED4CC] hover:bg-[#988773] hover:text-white transition-colors">
+                        create account
                       </Link>
                     </>
                   )}
@@ -211,29 +209,29 @@ export function Header() {
 
       {/* Mobile Menu - full screen overlay */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-[72px] z-50 bg-primary overflow-y-auto">
-          <nav className="px-6 py-6 space-y-1">
+        <div className="md:hidden fixed inset-0 top-[88px] z-50 bg-primary overflow-y-auto">
+          <nav className="px-6 py-6 space-y-0">
             {/* Films with expandable sub-menu */}
             <div>
               <button
                 onClick={() => setMobileFilmsOpen(!mobileFilmsOpen)}
-                className="flex items-center justify-between w-full px-3 py-3.5 text-[15px] tracking-wide text-white/90 hover:text-white transition-colors"
+                className="flex items-center justify-between w-full px-3 py-3.5 text-[18px] font-semibold lowercase text-white hover:text-[#C8AC8F] transition-colors border-b border-[#850709]"
               >
                 <span>films</span>
                 <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${mobileFilmsOpen ? 'rotate-180' : ''}`} />
               </button>
-              <div className={`overflow-hidden transition-all duration-300 ${mobileFilmsOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+              <div className={`overflow-hidden transition-all duration-300 bg-[#172234] ${mobileFilmsOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
                 <Link
                   href="/"
-                  className="block pl-8 pr-3 py-3 text-sm text-white/70 hover:text-white transition-colors"
+                  className="block pl-8 pr-3 py-3 text-[16px] font-semibold lowercase text-[#DED4CC] hover:bg-[#988773] hover:text-white transition-colors border-b border-[#98877385]"
                 >
-                  All Films
+                  all films
                 </Link>
                 {programs?.map((program) => (
                   <Link
                     key={program.id}
                     href={`/?program=${program.slug}`}
-                    className="block pl-8 pr-3 py-3 text-sm text-white/70 hover:text-white transition-colors"
+                    className="block pl-8 pr-3 py-3 text-[16px] font-semibold lowercase text-[#DED4CC] hover:bg-[#988773] hover:text-white transition-colors border-b border-[#98877385]"
                   >
                     {program.name}
                   </Link>
@@ -249,8 +247,8 @@ export function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`block px-3 py-3.5 text-[15px] tracking-wide transition-colors ${
-                    isActive ? 'text-white' : 'text-white/90 hover:text-white'
+                  className={`block px-3 py-3.5 text-[18px] font-semibold lowercase transition-colors border-b border-[#850709] ${
+                    isActive ? 'text-[#C8AC8F]' : 'text-white hover:text-[#C8AC8F]'
                   }`}
                 >
                   {link.label}
@@ -258,11 +256,9 @@ export function Header() {
               );
             })}
 
-            <hr className="border-white/15 my-4" />
-
             <Link
               href="/cart"
-              className="block px-3 py-3.5 text-[15px] tracking-wide text-white/90 hover:text-white transition-colors"
+              className="block px-3 py-3.5 text-[18px] font-semibold lowercase text-white hover:text-[#C8AC8F] transition-colors border-b border-[#850709]"
             >
               cart {cartCount > 0 && `(${cartCount})`}
             </Link>

@@ -49,7 +49,7 @@ export function HeroCarousel({ films, autoPlayInterval = 6000 }: HeroCarouselPro
 
   if (films.length === 0) {
     return (
-      <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] min-h-[350px] bg-gradient-to-br from-primary/20 to-cream flex items-center justify-center">
+      <div className="relative h-[55vh] sm:h-[65vh] md:h-[80vh] min-h-[400px] bg-gradient-to-br from-primary/20 to-cream flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-5xl font-display font-bold text-text-primary mb-4">FILMHOUSE</h1>
           <p className="text-text-secondary text-xl">Singapore&apos;s dedicated third space for moving visuals</p>
@@ -61,7 +61,7 @@ export function HeroCarousel({ films, autoPlayInterval = 6000 }: HeroCarouselPro
   const currentFilm = films[currentIndex];
 
   return (
-    <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] min-h-[350px] sm:min-h-[400px] max-h-[700px] overflow-hidden bg-black">
+    <div className="relative h-[55vh] sm:h-[65vh] md:h-[80vh] min-h-[400px] sm:min-h-[500px] max-h-[850px] overflow-hidden bg-black">
       {/* Slides */}
       {films.map((film, index) => {
         const bannerUrl = film.banner_url || null;
@@ -120,30 +120,30 @@ export function HeroCarousel({ films, autoPlayInterval = 6000 }: HeroCarouselPro
             </div>
 
             {/* Content */}
-            <div className="relative h-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-12 sm:pb-16 md:pb-24">
+            <div className="relative h-full max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-12 sm:pb-16 md:pb-24">
               <div className={`max-w-2xl transition-all duration-700 delay-200 ${
                 index === currentIndex ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
               }`}>
                 {/* Genre label */}
                 {film.genre && (
-                  <p className="text-white/60 text-[10px] tracking-[0.2em] uppercase mb-2 font-semibold">
+                  <p className="text-white/60 text-xs tracking-[0.2em] uppercase mb-3 font-semibold">
                     GENRE: {film.genre}
                   </p>
                 )}
 
                 {/* Title */}
-                <h1 className="text-2xl sm:text-3xl md:text-5xl font-display font-bold text-white mb-2 sm:mb-3 leading-tight">
+                <h1 className="text-3xl sm:text-4xl md:text-6xl font-display font-bold text-white mb-3 sm:mb-4 leading-tight">
                   {film.title}
                 </h1>
 
                 {/* Synopsis */}
-                <p className="text-white/80 text-xs sm:text-sm md:text-base leading-relaxed mb-4 sm:mb-5 line-clamp-2">
+                <p className="text-white/80 text-sm sm:text-base md:text-lg leading-relaxed mb-5 sm:mb-6 line-clamp-2">
                   {film.synopsis}
                 </p>
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="fh-hero-btn">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="fh-hero-btn text-sm px-5 py-2.5">
                     {film.rating}
                   </span>
                   {film.trailer_url ? (
@@ -151,16 +151,16 @@ export function HeroCarousel({ films, autoPlayInterval = 6000 }: HeroCarouselPro
                       href={film.trailer_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="fh-hero-btn-filled"
+                      className="fh-hero-btn-filled text-sm px-5 py-2.5"
                     >
                       TRAILER
                     </a>
                   ) : (
-                    <span className="fh-hero-btn-filled">TRAILER</span>
+                    <span className="fh-hero-btn-filled text-sm px-5 py-2.5">TRAILER</span>
                   )}
                   <Link
                     href={`/film/${film.slug}`}
-                    className="fh-hero-btn-filled"
+                    className="fh-hero-btn-filled text-sm px-5 py-2.5"
                   >
                     FULL SYNOPSIS
                   </Link>

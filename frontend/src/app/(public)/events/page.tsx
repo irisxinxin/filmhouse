@@ -72,27 +72,27 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen" style={{ background: '#DED4CC' }}>
       {/* Hero */}
       <div className="bg-primary text-white py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">Events</h1>
-          <p className="text-xl text-white/80 max-w-2xl">
+          <p className="text-xl text-[#DED4CC] max-w-2xl">
             Join us for special screenings, workshops, and community gatherings at Filmhouse.
           </p>
         </div>
       </div>
 
       {/* Categories Filter */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-wrap gap-2">
           {categories.map((cat, i) => (
             <button
               key={cat}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`px-4 py-2 text-sm font-semibold uppercase transition-all border ${
                 i === 0
-                  ? 'bg-primary text-white shadow-lg shadow-primary/25'
-                  : 'bg-white text-text-secondary hover:bg-gray-50 border border-gray-200'
+                  ? 'bg-primary text-[#DED4CC] border-primary'
+                  : 'bg-transparent text-primary border-primary hover:bg-primary hover:text-[#DED4CC]'
               }`}
             >
               {cat}
@@ -102,14 +102,14 @@ export default function EventsPage() {
       </div>
 
       {/* Events List */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="space-y-6">
           {events.map((event) => {
             const status = getDateStatus(event.date);
             return (
               <article 
                 key={event.id} 
-                className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group"
+                className="bg-[#0f1223] overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group"
               >
                 <div className="md:flex">
                   {/* Image */}
@@ -121,7 +121,7 @@ export default function EventsPage() {
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute top-4 left-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      <span className={`px-3 py-1 text-xs font-bold uppercase ${
                         event.category === 'Workshop' ? 'bg-purple-500 text-white' :
                         event.category === 'Talk' ? 'bg-blue-500 text-white' :
                         event.category === 'Festival' ? 'bg-amber-500 text-white' :
@@ -136,38 +136,34 @@ export default function EventsPage() {
                   <div className="md:w-3/5 p-6 md:p-8">
                     {/* Date & Time Badges */}
                     <div className="flex flex-wrap gap-2 mb-4">
-                      <span className={`inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full ${
-                        status === 'today' 
-                          ? 'bg-primary/10 text-primary font-semibold' 
-                          : 'bg-gray-100 text-text-secondary'
-                      }`}>
+                      <span className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 bg-[#fcf4d1] text-[#0f1223] font-semibold">
                         <Calendar className="w-4 h-4" />
                         {status === 'today' ? 'Today' : formatEventDate(event.date)}
                       </span>
-                      <span className="inline-flex items-center gap-1.5 text-sm bg-gray-100 text-text-secondary px-3 py-1.5 rounded-full">
+                      <span className="inline-flex items-center gap-1.5 text-sm bg-[#fcf4d1] text-[#0f1223] font-semibold px-3 py-1.5">
                         <Clock className="w-4 h-4" />
                         {event.time}
                       </span>
-                      <span className="inline-flex items-center gap-1.5 text-sm bg-gray-100 text-text-secondary px-3 py-1.5 rounded-full">
+                      <span className="inline-flex items-center gap-1.5 text-sm bg-[#fcf4d1] text-[#0f1223] font-semibold px-3 py-1.5">
                         <MapPin className="w-4 h-4" />
                         {event.venue}
                       </span>
                     </div>
                     
-                    <h2 className="text-xl md:text-2xl font-display font-bold text-text-primary mb-3 group-hover:text-primary transition-colors">
+                    <h2 className="text-xl md:text-2xl font-display font-bold text-[#fcf4d1] mb-3 group-hover:text-[#C8AC8F] transition-colors">
                       {event.title}
                     </h2>
-                    <p className="text-text-secondary mb-6 line-clamp-2">{event.description}</p>
+                    <p className="text-[#fcf4d1]/80 mb-6 line-clamp-2">{event.description}</p>
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <span className="text-2xl font-bold text-primary">${event.price}</span>
-                        <span className="text-sm text-text-muted flex items-center gap-1">
+                        <span className="text-2xl font-bold text-[#fcf4d1]">${event.price}</span>
+                        <span className="text-sm text-[#fcf4d1]/60 flex items-center gap-1">
                           <Users className="w-4 h-4" />
                           {event.spots} spots left
                         </span>
                       </div>
-                      <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-all hover:gap-3">
+                      <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-[#DED4CC] font-semibold uppercase hover:bg-[#DED4CC] hover:text-primary transition-all border border-primary hover:border-primary">
                         Book Now
                         <ArrowRight className="w-4 h-4" />
                       </button>
@@ -180,9 +176,9 @@ export default function EventsPage() {
         </div>
 
         {/* Newsletter CTA */}
-        <div className="mt-16 bg-white rounded-2xl p-8 md:p-12 text-center shadow-sm">
-          <h3 className="text-2xl font-display font-bold text-text-primary mb-3">Stay Updated</h3>
-          <p className="text-text-secondary mb-6 max-w-md mx-auto">
+        <div className="mt-16 bg-[#0f1223] p-8 md:p-12 text-center">
+          <h3 className="text-2xl font-display font-bold text-[#fcf4d1] mb-3">Stay Updated</h3>
+          <p className="text-[#fcf4d1]/70 mb-6 max-w-md mx-auto">
             Subscribe to our newsletter to be the first to know about upcoming events.
           </p>
           <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">

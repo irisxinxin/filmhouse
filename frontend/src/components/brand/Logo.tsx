@@ -14,7 +14,7 @@ export function Logo({
   href = '/',
   priority = false,
   className = '',
-  imageClassName = 'h-7 w-auto',
+  imageClassName = 'h-11 w-auto',
   width = 120,
   height = 62,
 }: LogoProps) {

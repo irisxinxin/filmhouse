@@ -49,7 +49,7 @@ export default function FilmDetailPage() {
 
   if (filmLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#DED4CC' }}>
         <Loader2 className="w-10 h-10 text-primary animate-spin" />
       </div>
     );
@@ -57,7 +57,7 @@ export default function FilmDetailPage() {
 
   if (!film) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#DED4CC' }}>
         <div className="text-center">
           <h1 className="text-2xl font-bold text-text-primary mb-2">Film Not Found</h1>
           <p className="text-text-secondary mb-4">The film you&apos;re looking for doesn&apos;t exist.</p>
@@ -73,7 +73,7 @@ export default function FilmDetailPage() {
   const bannerUrl = film.banner_url || null;
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+    <div className="min-h-screen" style={{ background: '#DED4CC' }}>
       {/* Hero Section with Banner */}
       <div className="relative">
         {/* Background Banner */}
@@ -87,13 +87,13 @@ export default function FilmDetailPage() {
               priority
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-primary/30 to-[#d8d0c8]" />
+            <div className="w-full h-full bg-gradient-to-br from-primary/30 to-[#DED4CC]" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#d8d0c8] via-[#d8d0c8]/90 to-[#d8d0c8]/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#DED4CC] via-[#DED4CC]/90 to-[#DED4CC]/30" />
         </div>
 
         {/* Content */}
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
+        <div className="relative max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
           <Link 
             href="/" 
             className="inline-flex items-center text-text-secondary hover:text-primary mb-6 transition-colors"
@@ -120,7 +120,7 @@ export default function FilmDetailPage() {
             <div className="flex-1 text-center md:text-left">
               {/* Awards Badge */}
               {film.awards && (
-                <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm mb-4">
+                <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 text-sm mb-4">
                   <Award className="w-4 h-4" />
                   <span className="font-medium">{film.awards.split('.')[0].split(',')[0]}</span>
                 </div>
@@ -139,7 +139,7 @@ export default function FilmDetailPage() {
                   {Math.floor(film.duration / 60)}h {film.duration % 60}min
                 </span>
                 <span className="w-1 h-1 bg-gray-400 rounded-full" />
-                <span className="px-2.5 py-1 bg-primary text-white text-sm font-bold rounded">
+                <span className="px-2.5 py-1 bg-primary text-white text-sm font-bold">
                   {film.rating}
                 </span>
                 <span className="w-1 h-1 bg-gray-400 rounded-full" />
@@ -147,7 +147,7 @@ export default function FilmDetailPage() {
                 {film.is_4k && (
                   <>
                     <span className="w-1 h-1 bg-gray-400 rounded-full" />
-                    <span className="px-2.5 py-1 bg-blue-500 text-white text-xs font-bold rounded">4K</span>
+                    <span className="px-2.5 py-1 bg-blue-500 text-white text-xs font-bold">4K</span>
                   </>
                 )}
               </div>
@@ -202,7 +202,7 @@ export default function FilmDetailPage() {
       </div>
 
       {/* Screenings Section */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="text-2xl font-display font-bold text-text-primary mb-6">
           Book Tickets
         </h2>
@@ -249,7 +249,7 @@ export default function FilmDetailPage() {
                 <Link
                   key={screening.id}
                   href={`/book/${screening.id}`}
-                  className="group flex flex-col items-center px-6 py-4 bg-[#d8d0c8] hover:bg-primary transition-all duration-200 border border-primary/20 hover:border-primary hover:shadow-lg"
+                  className="group flex flex-col items-center px-6 py-4 bg-[#DED4CC] hover:bg-primary transition-all duration-200 border border-primary/20 hover:border-primary hover:shadow-lg"
                 >
                   <span className="text-lg font-bold text-text-primary group-hover:text-white transition-colors">
                     {formatTime(screening.start_time)}
@@ -259,7 +259,7 @@ export default function FilmDetailPage() {
                     {screening.hall?.name || 'Main Hall'}
                   </span>
                   {screening.hall?.is_4k && (
-                    <span className="mt-1.5 px-2 py-0.5 bg-blue-500 text-white text-xs font-bold rounded">
+                    <span className="mt-1.5 px-2 py-0.5 bg-blue-500 text-white text-xs font-bold">
                       4K
                     </span>
                   )}
