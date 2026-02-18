@@ -219,23 +219,44 @@ func Seed(db *gorm.DB) error {
 	var allHalls []models.Hall
 	db.Find(&allHalls)
 
-	// Seed programs
+	// Seed programs (curated themes like filmhouse.sg)
 	programs := []models.Program{
-		{Name: "Now Showing", Slug: "now-showing", Description: "Currently showing at Filmhouse", SortOrder: 1, IsActive: true},
-		{Name: "Coming Soon", Slug: "coming-soon", Description: "Coming soon to Filmhouse", SortOrder: 2, IsActive: true},
-		{Name: "Special Screenings", Slug: "special-screenings", Description: "Special screenings and events", SortOrder: 3, IsActive: true},
+		{Name: "Coming Soon", Slug: "coming-soon", Description: "Coming soon to Filmhouse", SortOrder: 1, IsActive: true},
+		{Name: "Found Families", Slug: "found-families", Description: "Stories about the families we choose and the bonds that transcend blood", SortOrder: 2, IsActive: true},
+		{Name: "Love Is a Monster", Slug: "love-is-a-monster", Description: "When love consumes, transforms, and terrifies", SortOrder: 3, IsActive: true},
 	}
 	for i := range programs {
 		db.FirstOrCreate(&programs[i], models.Program{Slug: programs[i].Slug})
 	}
 
-	// Associate all films to "Now Showing" program
-	var nowShowing models.Program
-	db.Where("slug = ?", "now-showing").First(&nowShowing)
-	if nowShowing.ID != 0 {
-		for _, film := range allFilms {
-			pf := models.ProgramFilm{ProgramID: nowShowing.ID, FilmID: film.ID}
-			db.FirstOrCreate(&pf, models.ProgramFilm{ProgramID: nowShowing.ID, FilmID: film.ID})
+	// Reactivate coming-soon, deactivate old programs
+	db.Model(&models.Program{}).Where("slug = ?", "coming-soon").Update("is_active", true)
+	db.Model(&models.Program{}).Where("slug IN ?", []string{"now-showing", "special-screenings"}).Update("is_active", false)
+
+	// Associate films to themed programs
+	// "Found Families": Rental Family, Little Miss Sunshine, Sentimental Value
+	var foundFamilies models.Program
+	db.Where("slug = ?", "found-families").First(&foundFamilies)
+	if foundFamilies.ID != 0 {
+		for _, slug := range []string{"rental-family", "little-miss-sunshine-20th-anniversary", "sentimental-value"} {
+			var film models.Film
+			if db.Where("slug = ?", slug).First(&film).Error == nil {
+				pf := models.ProgramFilm{ProgramID: foundFamilies.ID, FilmID: film.ID}
+				db.FirstOrCreate(&pf, models.ProgramFilm{ProgramID: foundFamilies.ID, FilmID: film.ID})
+			}
+		}
+	}
+
+	// "Love Is a Monster": Thirst, Hamnet, Sirāt
+	var loveMonster models.Program
+	db.Where("slug = ?", "love-is-a-monster").First(&loveMonster)
+	if loveMonster.ID != 0 {
+		for _, slug := range []string{"thirst", "hamnet", "sirat"} {
+			var film models.Film
+			if db.Where("slug = ?", slug).First(&film).Error == nil {
+				pf := models.ProgramFilm{ProgramID: loveMonster.ID, FilmID: film.ID}
+				db.FirstOrCreate(&pf, models.ProgramFilm{ProgramID: loveMonster.ID, FilmID: film.ID})
+			}
 		}
 	}
 

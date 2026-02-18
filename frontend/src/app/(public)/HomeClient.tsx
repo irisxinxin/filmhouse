@@ -1,13 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { filmsApi, programsApi } from '@/lib/api';
 import { HeroCarousel } from '@/components/home/HeroCarousel';
+import { DateSelector } from '@/components/ui/DatePicker';
 import type { Film, Screening, Program } from '@/types';
-import { Mail, X } from 'lucide-react';
+import { Mail, X, CalendarDays } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { isSameDay } from 'date-fns';
 
 function formatTime(dateStr: string) {
   return new Date(dateStr).toLocaleTimeString('en-US', {
@@ -27,6 +30,7 @@ export default function HomeClient({
   const searchParams = useSearchParams();
   const router = useRouter();
   const programSlug = searchParams.get('program');
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const clearProgram = () => router.push('/', { scroll: false });
 
@@ -91,14 +95,34 @@ export default function HomeClient({
         </div>
       )}
 
-      {/* NOW SHOWING header */}
+      {/* Browse mode header */}
       <div className="sticky top-[88px] z-40 fh-surface backdrop-blur-sm fh-rule">
         <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="fh-datebar">
-            <div className="fh-datebar-left">
-              <span className="fh-datelabel">NOW SHOWING</span>
+            <div className="fh-datebar-left flex items-center gap-2">
+              <button
+                onClick={() => setSelectedDate(null)}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-base font-bold tracking-wide transition-all duration-200 ${
+                  !selectedDate
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-transparent text-primary border border-primary/30 hover:bg-primary/10'
+                }`}
+              >
+                Browse by Film
+              </button>
+              <button
+                onClick={() => setSelectedDate(selectedDate || new Date())}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-base font-bold tracking-wide transition-all duration-200 ${
+                  selectedDate
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-transparent text-primary border border-primary/30 hover:bg-primary/10'
+                }`}
+              >
+                <CalendarDays className="w-5 h-5" />
+                Browse by Date
+              </button>
             </div>
-            <div className="fh-datebar-right hidden sm:flex">
+            <div className="fh-datebar-right hidden sm:flex items-center">
               <Link href="/mailing-list" className="fh-mailing-link">
                 <span>JOIN OUR MAILING LIST</span>
                 <Mail className="w-4 h-4" />
@@ -108,6 +132,19 @@ export default function HomeClient({
         </div>
       </div>
 
+      {/* Date selector */}
+      {selectedDate && (
+        <div className="fh-surface border-b border-primary/10">
+          <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <DateSelector
+              selectedDate={selectedDate}
+              onDateSelect={setSelectedDate}
+              days={21}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Films Grid */}
       <section className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {isLoading ? (
@@ -115,7 +152,7 @@ export default function HomeClient({
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="fh-film-card animate-pulse">
                 <div className="flex min-h-[400px]">
-                  <div className="w-[280px] bg-white/30 shrink-0" />
+                  <div className="w-[200px] sm:w-[260px] lg:w-[300px] bg-white/30 shrink-0" />
                   <div className="flex-1 p-4 space-y-3">
                     <div className="h-5 bg-white/30 rounded w-2/3" />
                     <div className="h-3 bg-white/30 rounded w-1/2" />
@@ -128,7 +165,7 @@ export default function HomeClient({
         ) : films && films.length > 0 ? (
           <div className="fh-film-grid">
             {films.map((film, idx) => (
-              <FilmCard key={film.id} film={film} priority={idx < 4} />
+              <FilmCard key={film.id} film={film} priority={idx < 4} selectedDate={selectedDate} />
             ))}
           </div>
         ) : (
@@ -153,7 +190,7 @@ function formatShortDate(dateStr: string) {
   return d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
-function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
+function FilmCard({ film, priority, selectedDate }: { film: Film; priority?: boolean; selectedDate?: Date | null }) {
   const posterUrl = film.poster_url || null;
 
   // Fetch upcoming screenings for this film
@@ -166,7 +203,7 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
     staleTime: 60_000,
   });
 
-  const upcomingScreenings = (screenings || []).slice(0, 6);
+  const upcomingScreenings = (screenings || []).slice(0, 20);
 
   // Group screenings by date
   const screeningsByDate = upcomingScreenings.reduce((acc, s) => {
@@ -176,11 +213,26 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
     return acc;
   }, {} as Record<string, Screening[]>);
 
+  // Get unique dates to display
+  const screeningDates = Object.entries(screeningsByDate).map(([dateKey, sessions]) => ({
+    dateKey,
+    label: formatShortDate(sessions[0].start_time),
+    count: sessions.length,
+  }));
+
+  // If a date is selected and this film has no screenings on that date, don't render
+  if (selectedDate) {
+    const hasScreeningOnDate = upcomingScreenings.some(s =>
+      isSameDay(new Date(s.start_time), selectedDate)
+    );
+    if (!hasScreeningOnDate) return null;
+  }
+
   return (
     <article className="fh-film-card h-full flex flex-col">
       <div className="flex flex-1">
         <Link href={`/film/${film.slug}`}
-          className="group relative w-[220px] sm:w-[280px] shrink-0 overflow-hidden bg-white/30">
+          className="group relative w-[200px] sm:w-[260px] lg:w-[300px] shrink-0 overflow-hidden bg-white/30">
           {posterUrl ? (
             <Image src={posterUrl} alt={film.title} fill className="object-cover" sizes="280px" priority={!!priority} />
           ) : (
@@ -207,25 +259,45 @@ function FilmCard({ film, priority }: { film: Film; priority?: boolean }) {
         </div>
       </div>
 
-      {/* Bottom bar: date + showtimes + book */}
+      {/* Bottom bar */}
       <div className="fh-card-bottom border-t border-primary/10 px-4 sm:px-5 py-3 flex items-center justify-between gap-3 transition-all duration-300">
-        <div className="flex flex-wrap items-center gap-1.5">
-          {Object.keys(screeningsByDate).length > 0 && (() => {
-            const [, dateSessions] = Object.entries(screeningsByDate)[0];
-            return (
-              <>
-                <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
-                  {formatShortDate(dateSessions[0].start_time)}
-                </span>
-                {dateSessions.map((s) => (
-                  <Link key={s.id} href={`/book/${s.id}`} className="fh-pill-solid">
-                    {formatTime(s.start_time)}
-                  </Link>
-                ))}
-                {film.is_4k && <span className="fh-badge-4k">4K</span>}
-              </>
-            );
-          })()}
+        <div className="flex flex-wrap items-center gap-2">
+          {selectedDate ? (
+            /* Date selected: show showtimes for that date */
+            (() => {
+              const dateKey = selectedDate.toDateString();
+              const sessions = screeningsByDate[dateKey] || [];
+              return (
+                <>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
+                    {formatShortDate(selectedDate.toISOString())}
+                  </span>
+                  {sessions.map((s) => (
+                    <Link key={s.id} href={`/book/${s.id}`} className="fh-pill-solid hover:opacity-80 transition-opacity">
+                      {formatTime(s.start_time)}
+                    </Link>
+                  ))}
+                </>
+              );
+            })()
+          ) : (
+            /* No date selected: show date pills */
+            <>
+              {screeningDates.slice(0, 3).map((d) => (
+                <Link key={d.dateKey} href={`/film/${film.slug}`} className="fh-pill-solid hover:opacity-80 transition-opacity">
+                  {d.label}
+                </Link>
+              ))}
+              {screeningDates.length > 3 && (
+                <Link href={`/film/${film.slug}`} className="text-sm font-bold text-primary hover:text-primary-dark transition-colors whitespace-nowrap">
+                  +{screeningDates.length - 3} more
+                </Link>
+              )}
+              {screeningDates.length === 0 && (
+                <span className="text-xs text-text-secondary italic">Coming soon</span>
+              )}
+            </>
+          )}
         </div>
         <Link href={`/film/${film.slug}`} className="fh-btn-outline-red shrink-0">
           Book tickets
