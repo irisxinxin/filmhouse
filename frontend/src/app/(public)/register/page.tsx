@@ -81,26 +81,59 @@ export default function RegisterPage() {
   const strength = passwordStrength();
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-cream">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <h2 className="text-2xl font-display font-bold text-text-primary">FILMHOUSE</h2>
-          </Link>
-          <p className="text-text-muted mt-2">Create your account</p>
-        </div>
+    <div className="relative min-h-[80vh] bg-cream px-4 py-10">
+      {/* Background texture */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 left-1/2 h-72 w-[44rem] -translate-x-1/2 rounded-full bg-gradient-to-r from-primary/20 via-amber-200/30 to-primary/10 blur-3xl" />
+        <div className="absolute -bottom-24 right-[-6rem] h-64 w-64 rounded-full bg-gradient-to-tr from-primary/15 to-emerald-200/20 blur-3xl" />
+        <div
+          className="absolute inset-0 opacity-[0.22]"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 1px 1px, rgba(0,0,0,0.05) 1px, transparent 0)',
+            backgroundSize: '18px 18px',
+          }}
+        />
+      </div>
 
-        <div className="bg-white rounded-2xl p-8 shadow-sm">
-          {/* Error Alert */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 animate-slide-down">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <p className="text-red-600 text-sm">{error}</p>
+      <div className="relative mx-auto w-full max-w-4xl">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] overflow-hidden rounded-3xl border border-black/5 bg-white shadow-[0_22px_60px_-35px_rgba(15,23,42,0.45)]">
+          {/* Left: Form */}
+          <div className="p-7 sm:p-10">
+            <div className="flex items-start justify-between gap-6">
+              <div>
+                <Link href="/" className="inline-flex items-center gap-3">
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+                    <span className="text-sm font-black tracking-widest">FH</span>
+                  </span>
+                  <span className="text-lg font-display font-bold text-text-primary tracking-[0.12em]">
+                    FILMHOUSE
+                  </span>
+                </Link>
+                <h1 className="mt-5 text-3xl sm:text-4xl font-display font-bold text-text-primary leading-tight">
+                  Create your account
+                </h1>
+                <p className="mt-2 text-sm sm:text-base text-text-secondary max-w-md">
+                  Save your details for faster checkout, view bookings, and earn membership points.
+                </p>
+              </div>
+              <div className="hidden sm:flex flex-col items-end text-right">
+                <span className="text-xs font-semibold text-text-muted">Already a member?</span>
+                <Link href="/login" className="mt-1 text-sm font-semibold text-primary hover:text-primary-dark">
+                  Sign in →
+                </Link>
+              </div>
             </div>
-          )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Error Alert */}
+            {error && (
+              <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3 animate-slide-down">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <p className="text-red-700 text-sm leading-relaxed">{error}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="mt-7 space-y-4">
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -243,7 +276,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-primary w-full mt-6"
+              className="mt-6 w-full rounded-2xl bg-primary px-5 py-3.5 text-white font-semibold shadow-sm transition-all hover:bg-primary-dark hover:shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -254,23 +287,61 @@ export default function RegisterPage() {
                 'Create Account'
               )}
             </button>
+
+            <div className="mt-6 sm:hidden text-center text-sm text-text-muted">
+              Already have an account?{' '}
+              <Link href="/login" className="text-primary hover:text-primary-dark font-semibold">
+                Sign in
+              </Link>
+            </div>
+
+            {/* Terms */}
+            <p className="mt-6 text-center text-xs text-text-muted leading-relaxed">
+              By creating an account, you agree to our{' '}
+              <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+            </p>
           </form>
+          </div>
 
-          <p className="mt-6 text-center text-text-muted text-sm">
-            Already have an account?{' '}
-            <Link href="/login" className="text-primary hover:text-primary-dark font-medium">
-              Sign in
-            </Link>
-          </p>
+          {/* Right: Benefits */}
+          <aside className="relative border-t border-black/5 bg-gradient-to-b from-cream to-white p-7 sm:p-10 lg:border-t-0 lg:border-l">
+            <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-black/10 to-transparent lg:hidden" />
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold tracking-wider text-text-muted">YOUR TICKET TO</p>
+                <h2 className="mt-1 text-2xl font-display font-bold text-text-primary">Member Perks</h2>
+              </div>
+              <div className="h-10 w-10 rounded-2xl bg-white shadow-sm border border-black/5 flex items-center justify-center">
+                <Check className="h-5 w-5 text-emerald-600" />
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              <div className="rounded-2xl bg-white/70 border border-black/5 p-4">
+                <p className="text-sm font-semibold text-text-primary">Faster checkout</p>
+                <p className="mt-1 text-sm text-text-secondary">Auto-fill your details and jump straight to seats.</p>
+              </div>
+              <div className="rounded-2xl bg-white/70 border border-black/5 p-4">
+                <p className="text-sm font-semibold text-text-primary">All bookings in one place</p>
+                <p className="mt-1 text-sm text-text-secondary">Reopen QR tickets anytime from your profile.</p>
+              </div>
+              <div className="rounded-2xl bg-white/70 border border-black/5 p-4">
+                <p className="text-sm font-semibold text-text-primary">Membership points</p>
+                <p className="mt-1 text-sm text-text-secondary">Earn points and access member pricing.</p>
+              </div>
+            </div>
+
+            <div className="mt-8 rounded-3xl bg-dark text-white p-5 shadow-sm">
+              <p className="text-xs font-semibold tracking-wider text-white/70">TIP</p>
+              <p className="mt-1 text-sm text-white/85 leading-relaxed">
+                Use an email you can access right now — we send e-tickets there after checkout.
+              </p>
+            </div>
+          </aside>
         </div>
-
-        {/* Terms */}
-        <p className="mt-6 text-center text-xs text-text-muted">
-          By creating an account, you agree to our{' '}
-          <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
-          {' '}and{' '}
-          <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
-        </p>
       </div>
     </div>
   );
