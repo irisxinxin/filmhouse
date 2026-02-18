@@ -89,7 +89,7 @@ func Seed(db *gorm.DB) error {
 			Synopsis:   "The powerful story of love and loss that inspired the creation of Shakespeare's timeless masterpiece, Hamlet. In English with English and Chinese dual subtitles.",
 			Language:   "English",
 			Subtitles:  "English and Chinese",
-			PosterURL:  "/images/films/hamnet.png",
+			PosterURL:  "/images/films/hamnet.jpg",
 			BannerURL:  "/images/banners/hamnet-banner.jpg",
 			Awards:     "Academy Awards 2026 Nominee for Best Picture, Best Director, Best Actress and Best Original Score. Golden Globes 2026 Winner Best Drama Motion Picture, Best Female Actress in Motion Picture.",
 			IsFeatured: true,
@@ -154,7 +154,7 @@ func Seed(db *gorm.DB) error {
 			Director:   "Park Chan-wook",
 			Language:   "Korean",
 			Subtitles:  "English",
-			PosterURL:  "/images/films/thirst.png",
+			PosterURL:  "/images/films/thirst.jpg",
 			BannerURL:  "/images/banners/thirst-banner.jpg",
 			TrailerURL: "https://www.youtube.com/embed/j9XMJJ5DZso",
 			Awards:     "Cannes Film Festival 2009 Jury Prize Winner.",
@@ -204,6 +204,33 @@ func Seed(db *gorm.DB) error {
 			Subtitles:  "English",
 			PosterURL:  "/images/films/sirat.png",
 			Awards:     "Academy Awards 2026 Nominee for Best International Feature Film and Best Sound. Cannes Film Festival 2025 Jury Prize Winner and Cannes Soundtrack Award Winner.",
+			IsFeatured: false,
+			IsActive:   true,
+		},
+		{
+			Title:      "A Useful Ghost",
+			Slug:       "a-useful-ghost",
+			Year:       2026,
+			Duration:   95,
+			Rating:     "R21",
+			Genre:      "Comedy/Satire",
+			Synopsis:   "A genre-bending satire where a woman returns from the dead to possess a vacuum cleaner, determined to prove her love to her husband by exorcising the chaos in their home.",
+			Language:   "Mandarin",
+			Subtitles:  "English",
+			IsFeatured: false,
+			IsActive:   true,
+		},
+		{
+			Title:      "No Other Choice",
+			Slug:       "no-other-choice",
+			Year:       2026,
+			Duration:   128,
+			Rating:     "M18",
+			Genre:      "Thriller",
+			Synopsis:   "From the director of Oldboy and Decision to Leave. A gripping thriller about impossible choices and their devastating consequences.",
+			Director:   "Park Chan-wook",
+			Language:   "Korean",
+			Subtitles:  "English",
 			IsFeatured: false,
 			IsActive:   true,
 		},
@@ -260,7 +287,20 @@ func Seed(db *gorm.DB) error {
 		}
 	}
 
-	// Seed screenings for the next 7 days
+	// "Coming Soon": A Useful Ghost, No Other Choice (no screenings yet)
+	var comingSoon models.Program
+	db.Where("slug = ?", "coming-soon").First(&comingSoon)
+	if comingSoon.ID != 0 {
+		for _, slug := range []string{"a-useful-ghost", "no-other-choice"} {
+			var film models.Film
+			if db.Where("slug = ?", slug).First(&film).Error == nil {
+				pf := models.ProgramFilm{ProgramID: comingSoon.ID, FilmID: film.ID}
+				db.FirstOrCreate(&pf, models.ProgramFilm{ProgramID: comingSoon.ID, FilmID: film.ID})
+			}
+		}
+	}
+
+	// Seed screenings for the next 7 days (only for films that are NOT coming soon)
 
 	now := time.Now()
 	for day := 0; day < 7; day++ {
