@@ -71,8 +71,12 @@ export default function RegisterPage() {
       setAuth(res.data.user, res.data.token);
       router.push('/');
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { error?: string } } };
-      setError(error.response?.data?.error || 'Registration failed. Please try again.');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        const error = err as { response?: { data?: { error?: string } } };
+        setError(error.response?.data?.error || 'Registration failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

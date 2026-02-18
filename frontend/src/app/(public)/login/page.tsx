@@ -35,8 +35,12 @@ function LoginForm() {
       setAuth(res.data.user, res.data.token);
       router.push(redirect);
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { error?: string } } };
-      setError(error.response?.data?.error || 'Invalid email or password');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        const error = err as { response?: { data?: { error?: string } } };
+        setError(error.response?.data?.error || 'Invalid email or password');
+      }
     } finally {
       setLoading(false);
     }
