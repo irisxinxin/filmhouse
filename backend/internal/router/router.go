@@ -57,6 +57,14 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	// Cache uploaded assets aggressively (posters/banners are content-addressed-ish via random suffixes)
+	r.Use(func(c *gin.Context) {
+		if strings.HasPrefix(c.Request.URL.Path, "/uploads/") {
+			c.Header("Cache-Control", "public, max-age=31536000, immutable")
+		}
+		c.Next()
+	})
+
 	// Serve uploaded files
 	r.Static("/uploads", "./uploads")
 

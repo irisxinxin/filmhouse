@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    minimumCacheTTL: 86400,
     remotePatterns: [
       {
         protocol: 'http',
@@ -26,6 +27,10 @@ const nextConfig: NextConfig = {
       {
         source: '/api/:path*',
         destination: 'https://backend-production-113d.up.railway.app/api/:path*',
+      },
+      {
+        source: '/uploads/:path*',
+        destination: 'https://backend-production-113d.up.railway.app/uploads/:path*',
       },
     ];
   },

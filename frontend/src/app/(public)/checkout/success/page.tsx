@@ -27,26 +27,20 @@ function CheckoutSuccessContent() {
     enabled: !!sessionId,
   });
 
-  // Get booking refs from payment status or URL params
-  const effectiveBookingRefs = paymentStatus?.booking_id 
-    ? [paymentStatus.booking_id.toString()]
+  // Prefer public booking lookup by reference, because Stripe checkout can be guest (no auth token)
+  const effectiveBookingRefs = paymentStatus?.booking_ref
+    ? [paymentStatus.booking_ref]
     : bookingRefs;
 
   const { data: bookings, isLoading: isLoadingBookings } = useQuery({
     queryKey: ['checkout-bookings', effectiveBookingRefs],
     queryFn: async () => {
-      // If we have booking IDs from payment status, fetch by ID
-      if (paymentStatus?.booking_id) {
-        const res = await bookingsApi.get(paymentStatus.booking_id);
-        return res.data ? [res.data] : [];
-      }
-      // Otherwise fetch by refs
       const results = await Promise.all(
-        effectiveBookingRefs.map(ref => bookingsApi.getByRef(ref).catch(() => null))
+        effectiveBookingRefs.map((ref) => bookingsApi.getByRef(ref).catch(() => null))
       );
-      return results.filter(r => r?.data).map(r => r!.data);
+      return results.filter((r) => r?.data).map((r) => r!.data);
     },
-    enabled: effectiveBookingRefs.length > 0 || !!paymentStatus,
+    enabled: effectiveBookingRefs.length > 0,
   });
 
   const isLoading = isLoadingPayment || isLoadingBookings;
@@ -122,6 +116,7 @@ function CheckoutSuccessContent() {
                     alt={booking.screening?.film?.title || 'Film'}
                     fill
                     className="object-cover"
+                    sizes="64px"
                   />
                 </div>
                 <div>

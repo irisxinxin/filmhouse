@@ -290,5 +290,6 @@ func (h *PaymentHandler) GetPaymentStatus(c *gin.Context) {
 		"status":         s.Status,
 		"payment_status": s.PaymentStatus,
 		"booking_id":     s.Metadata["booking_id"],
+		"booking_ref":    s.Metadata["booking_ref"],
 	})
 }
