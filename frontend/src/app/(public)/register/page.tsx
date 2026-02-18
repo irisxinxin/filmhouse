@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Logo } from '@/components/brand/Logo';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 import { Mail, Lock, User, Phone, AlertCircle, Loader2, Eye, EyeOff, Check } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { setAuth, isAuthenticated } = useAuthStore();
+  const { setAuth, isAuthenticated, hasHydrated } = useAuthStore();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -23,10 +24,10 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (hasHydrated && isAuthenticated) {
       router.push('/');
     }
-  }, [isAuthenticated, router]);
+  }, [hasHydrated, isAuthenticated, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -102,14 +103,9 @@ export default function RegisterPage() {
           <div className="p-7 sm:p-10">
             <div className="flex items-start justify-between gap-6">
               <div>
-                <Link href="/" className="inline-flex items-center gap-3">
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
-                    <span className="text-sm font-black tracking-widest">FH</span>
-                  </span>
-                  <span className="text-lg font-display font-bold text-text-primary tracking-[0.12em]">
-                    FILMHOUSE
-                  </span>
-                </Link>
+                <span className="inline-flex items-center rounded-xl bg-primary px-4 py-2 shadow-sm">
+                  <Logo priority className="inline-flex items-center" imageClassName="h-7 w-auto" />
+                </span>
                 <h1 className="mt-5 text-3xl sm:text-4xl font-display font-bold text-text-primary leading-tight">
                   Create your account
                 </h1>
@@ -135,7 +131,7 @@ export default function RegisterPage() {
 
             <form onSubmit={handleSubmit} className="mt-7 space-y-4">
             {/* Name Fields */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="first_name" className="block text-sm font-medium text-text-primary mb-2">
                   First Name
@@ -148,8 +144,8 @@ export default function RegisterPage() {
                     type="text"
                     value={formData.first_name}
                     onChange={handleChange}
-                    className="input pl-12 w-full"
-                    placeholder="John"
+                    className="input !pl-12 w-full"
+                    placeholder=""
                   />
                 </div>
               </div>
@@ -164,7 +160,7 @@ export default function RegisterPage() {
                   value={formData.last_name}
                   onChange={handleChange}
                   className="input w-full"
-                  placeholder="Doe"
+                  placeholder=""
                 />
               </div>
             </div>
@@ -182,8 +178,8 @@ export default function RegisterPage() {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="input pl-12 w-full"
-                  placeholder="you@example.com"
+                  className="input !pl-12 w-full"
+                  placeholder=""
                   required
                   autoComplete="email"
                 />
@@ -203,8 +199,8 @@ export default function RegisterPage() {
                   type="tel"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="input pl-12 w-full"
-                  placeholder="+65 9123 4567"
+                  className="input !pl-12 w-full"
+                  placeholder=""
                 />
               </div>
             </div>
@@ -222,8 +218,8 @@ export default function RegisterPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={handleChange}
-                  className="input pl-12 pr-12 w-full"
-                  placeholder="••••••••"
+                  className="input !pl-12 !pr-12 w-full"
+                  placeholder=""
                   required
                   autoComplete="new-password"
                 />
@@ -262,8 +258,8 @@ export default function RegisterPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="input pl-12 pr-12 w-full"
-                  placeholder="••••••••"
+                  className="input !pl-12 !pr-12 w-full"
+                  placeholder=""
                   required
                   autoComplete="new-password"
                 />

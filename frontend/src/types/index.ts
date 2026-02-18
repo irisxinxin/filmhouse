@@ -119,3 +119,14 @@ export interface AuthResponse {
   token: string;
   user: User;
 }
+
+export interface Program {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  image_url: string;
+  sort_order: number;
+  is_active: boolean;
+  films?: Film[];
+}

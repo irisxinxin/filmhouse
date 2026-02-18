@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { format } from 'date-fns';
 import type { Film, FilmWithScreenings } from '@/types';
 import HomeClient from './HomeClient';
@@ -21,10 +22,12 @@ export default async function HomePage() {
   ]);
 
   return (
-    <HomeClient
-      initialDateStr={initialDateStr}
-      initialFeaturedFilms={initialFeaturedFilms}
-      initialFilmScreenings={initialFilmScreenings}
-    />
+    <Suspense fallback={<div className="min-h-screen" style={{ background: 'var(--background)' }} />}>
+      <HomeClient
+        initialDateStr={initialDateStr}
+        initialFeaturedFilms={initialFeaturedFilms}
+        initialFilmScreenings={initialFilmScreenings}
+      />
+    </Suspense>
   );
 }

@@ -212,12 +212,34 @@ func Seed(db *gorm.DB) error {
 		db.FirstOrCreate(&films[i], models.Film{Slug: films[i].Slug})
 	}
 
-	// Seed screenings for the next 7 days
+	// Fetch all films and halls for seeding relationships
 	var allFilms []models.Film
 	db.Find(&allFilms)
-	
+
 	var allHalls []models.Hall
 	db.Find(&allHalls)
+
+	// Seed programs
+	programs := []models.Program{
+		{Name: "Now Showing", Slug: "now-showing", Description: "Currently showing at Filmhouse", SortOrder: 1, IsActive: true},
+		{Name: "Coming Soon", Slug: "coming-soon", Description: "Coming soon to Filmhouse", SortOrder: 2, IsActive: true},
+		{Name: "Special Screenings", Slug: "special-screenings", Description: "Special screenings and events", SortOrder: 3, IsActive: true},
+	}
+	for i := range programs {
+		db.FirstOrCreate(&programs[i], models.Program{Slug: programs[i].Slug})
+	}
+
+	// Associate all films to "Now Showing" program
+	var nowShowing models.Program
+	db.Where("slug = ?", "now-showing").First(&nowShowing)
+	if nowShowing.ID != 0 {
+		for _, film := range allFilms {
+			pf := models.ProgramFilm{ProgramID: nowShowing.ID, FilmID: film.ID}
+			db.FirstOrCreate(&pf, models.ProgramFilm{ProgramID: nowShowing.ID, FilmID: film.ID})
+		}
+	}
+
+	// Seed screenings for the next 7 days
 
 	now := time.Now()
 	for day := 0; day < 7; day++ {

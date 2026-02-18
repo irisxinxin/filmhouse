@@ -136,6 +136,12 @@ export const hallsApi = {
   get: (id: number) => api.get(`/halls/${id}`),
 };
 
+// Programs API (public)
+export const programsApi = {
+  list: () => api.get('/programs'),
+  get: (slug: string) => api.get(`/programs/${slug}`),
+};
+
 // Admin API
 export const adminApi = {
   // Films
@@ -180,6 +186,18 @@ export const adminApi = {
     api.get('/admin/bookings', { params }),
   updateBookingStatus: (id: number, status: string) =>
     api.put(`/admin/bookings/${id}/status`, { status }),
+
+  // Programs
+  listPrograms: () => api.get('/admin/programs'),
+  createProgram: (data: { name: string; slug?: string; description?: string; image_url?: string; sort_order?: number; is_active?: boolean }) =>
+    api.post('/admin/programs', data),
+  updateProgram: (id: number, data: Partial<{ name: string; slug: string; description: string; image_url: string; sort_order: number; is_active: boolean }>) =>
+    api.put(`/admin/programs/${id}`, data),
+  deleteProgram: (id: number) => api.delete(`/admin/programs/${id}`),
+  addFilmToProgram: (programId: number, filmId: number, sortOrder?: number) =>
+    api.post(`/admin/programs/${programId}/films`, { film_id: filmId, sort_order: sortOrder || 0 }),
+  removeFilmFromProgram: (programId: number, filmId: number) =>
+    api.delete(`/admin/programs/${programId}/films/${filmId}`),
 };
 
 import type { Film, Hall } from '@/types';

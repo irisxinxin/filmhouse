@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/auth';
-import { Film, Calendar, Users, LayoutDashboard, Settings, Armchair, QrCode, LogOut, Home } from 'lucide-react';
+import { Film, Calendar, Users, LayoutDashboard, Settings, Armchair, QrCode, LogOut, Home, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -37,6 +37,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
     { href: '/admin/scan', icon: QrCode, label: 'Scan Tickets' },
     { href: '/admin/films', icon: Film, label: 'Films' },
+    { href: '/admin/programs', icon: Layers, label: 'Programs' },
     { href: '/admin/screenings', icon: Calendar, label: 'Screenings' },
     { href: '/admin/halls', icon: Armchair, label: 'Halls & Seats' },
     { href: '/admin/bookings', icon: Users, label: 'Bookings' },

@@ -45,6 +45,30 @@ type Membership struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+// Program represents a curated collection of films (e.g. "Now Showing", "Coming Soon", "Japanese Film Festival")
+type Program struct {
+	ID          uint           `gorm:"primaryKey" json:"id"`
+	Name        string         `gorm:"size:255;not null" json:"name"`
+	Slug        string         `gorm:"uniqueIndex;size:255;not null" json:"slug"`
+	Description string         `gorm:"type:text" json:"description"`
+	ImageURL    string         `gorm:"size:500" json:"image_url"`
+	SortOrder   int            `gorm:"default:0" json:"sort_order"`
+	IsActive    bool           `gorm:"default:true" json:"is_active"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	Films       []Film         `gorm:"many2many:program_films;" json:"films,omitempty"`
+}
+
+// ProgramFilm is the join table for Program <-> Film many-to-many
+type ProgramFilm struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	ProgramID uint      `gorm:"not null;index:idx_program_film,unique" json:"program_id"`
+	FilmID    uint      `gorm:"not null;index:idx_program_film,unique" json:"film_id"`
+	SortOrder int       `gorm:"default:0" json:"sort_order"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 // Film represents a movie
 type Film struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
@@ -70,6 +94,7 @@ type Film struct {
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 	Screenings  []Screening    `gorm:"foreignKey:FilmID" json:"screenings,omitempty"`
+	Programs    []Program      `gorm:"many2many:program_films;" json:"programs,omitempty"`
 }
 
 // Hall represents a cinema hall/room

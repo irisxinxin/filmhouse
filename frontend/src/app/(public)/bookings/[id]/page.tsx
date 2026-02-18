@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -17,13 +17,14 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
   const router = useRouter();
   const searchParams = useSearchParams();
   const isNew = searchParams.get('new') === 'true';
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, hasHydrated } = useAuthStore();
+  const [shareStatus, setShareStatus] = useState<string>('');
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (hasHydrated && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [hasHydrated, isAuthenticated, router]);
 
   const { data: booking, isLoading, refetch } = useQuery({
     queryKey: ['booking', id],
@@ -60,6 +61,41 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
   }
 
   const posterUrl = booking.screening?.film?.poster_url || '/images/placeholder-poster.jpg';
+
+  const handleShare = async () => {
+    try {
+      const url = typeof window !== 'undefined' ? window.location.href : '';
+      const title = `My Filmhouse booking: ${booking.screening?.film?.title || 'Film'}`;
+      const text = `I just booked tickets for ${booking.screening?.film?.title || 'a film'} at Filmhouse.`;
+
+      const nav = (globalThis as unknown as { navigator?: Navigator }).navigator;
+
+      if (nav && 'share' in nav) {
+        // Web Share API (mobile-first). Some desktop browsers won't support it.
+        await (nav as Navigator & { share: (data: unknown) => Promise<void> }).share({
+          title,
+          text,
+          url,
+        });
+        setShareStatus('Shared.');
+        return;
+      }
+
+      const clipboard = (nav as unknown as { clipboard?: { writeText?: (text: string) => Promise<void> } })?.clipboard;
+      if (clipboard?.writeText) {
+        await clipboard.writeText(url);
+        setShareStatus('Link copied.');
+        return;
+      }
+
+      setShareStatus('Sharing not supported on this browser.');
+    } catch {
+      // User cancelled share sheet or browser blocked it.
+      setShareStatus('Share cancelled.');
+    } finally {
+      window.setTimeout(() => setShareStatus(''), 2500);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-cream py-8">
@@ -255,11 +291,18 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                 <Download className="w-4 h-4" />
                 Save Ticket
               </button>
-              <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-text-primary rounded-lg text-sm font-medium transition-colors">
+              <button
+                onClick={handleShare}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-text-primary rounded-lg text-sm font-medium transition-colors"
+              >
                 <Share2 className="w-4 h-4" />
                 Share
               </button>
             </div>
+
+            {shareStatus && (
+              <p className="mt-3 text-sm text-text-muted">{shareStatus}</p>
+            )}
           </div>
         )}
 

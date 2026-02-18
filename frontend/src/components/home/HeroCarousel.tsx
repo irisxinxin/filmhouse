@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Play, Clock, Award } from 'lucide-react';
+/* lucide arrows removed – using plain text ‹ › for filmhouse.sg style */
 import type { Film } from '@/types';
 
 interface HeroCarouselProps {
@@ -49,7 +49,7 @@ export function HeroCarousel({ films, autoPlayInterval = 6000 }: HeroCarouselPro
 
   if (films.length === 0) {
     return (
-      <div className="relative h-[70vh] min-h-[500px] bg-gradient-to-br from-primary/20 to-cream flex items-center justify-center">
+      <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] min-h-[350px] bg-gradient-to-br from-primary/20 to-cream flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-5xl font-display font-bold text-text-primary mb-4">FILMHOUSE</h1>
           <p className="text-text-secondary text-xl">Singapore&apos;s dedicated third space for moving visuals</p>
@@ -60,19 +60,20 @@ export function HeroCarousel({ films, autoPlayInterval = 6000 }: HeroCarouselPro
 
   const currentFilm = films[currentIndex];
 
-  const formatDuration = (mins: number) => {
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    return `${h}h ${m}m`;
-  };
-
   return (
-    <div className="relative h-[70vh] min-h-[500px] max-h-[700px] overflow-hidden bg-black">
+    <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] min-h-[350px] sm:min-h-[400px] max-h-[700px] overflow-hidden bg-black">
       {/* Slides */}
       {films.map((film, index) => {
         const bannerUrl = film.banner_url || null;
         const posterUrl = film.poster_url || null;
-        
+
+        // Next/Image may eager-load images that are "in view" even if the slide is visually hidden.
+        // Only mount images for the current slide (+ neighbors) to speed up landing.
+        const shouldRenderImage =
+          index === currentIndex ||
+          index === (currentIndex + 1) % films.length ||
+          index === (currentIndex - 1 + films.length) % films.length;
+
         return (
           <div
             key={film.id}
@@ -84,23 +85,32 @@ export function HeroCarousel({ films, autoPlayInterval = 6000 }: HeroCarouselPro
           >
             {/* Background Image */}
             <div className="absolute inset-0">
-              {bannerUrl ? (
-                <Image
-                  src={bannerUrl}
-                  alt={film.title}
-                  fill
-                  className="object-cover object-center"
-                  priority={index === 0}
-                  sizes="100vw"
-                />
-              ) : posterUrl ? (
-                <Image
-                  src={posterUrl}
-                  alt={film.title}
-                  fill
-                  className="object-cover scale-150 blur-xl"
-                  priority={index === 0}
-                />
+              {shouldRenderImage ? (
+                bannerUrl ? (
+                  <Image
+                    src={bannerUrl}
+                    alt={film.title}
+                    fill
+                    className="object-cover object-center"
+                    priority={index === 0}
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    quality={75}
+                    sizes="100vw"
+                  />
+                ) : posterUrl ? (
+                  <Image
+                    src={posterUrl}
+                    alt={film.title}
+                    fill
+                    className="object-cover scale-150 blur-xl"
+                    priority={index === 0}
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    quality={75}
+                    sizes="100vw"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/40 to-black" />
+                )
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-primary/40 to-black" />
               )}
@@ -110,69 +120,50 @@ export function HeroCarousel({ films, autoPlayInterval = 6000 }: HeroCarouselPro
             </div>
 
             {/* Content */}
-            <div className="relative h-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-20 md:pb-24">
+            <div className="relative h-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-12 sm:pb-16 md:pb-24">
               <div className={`max-w-2xl transition-all duration-700 delay-200 ${
                 index === currentIndex ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
               }`}>
-                {/* Badges */}
-                <div className="flex flex-wrap items-center gap-2 mb-4">
-                  <span className="px-3 py-1 bg-primary text-white text-sm font-bold rounded">
-                    {film.rating}
-                  </span>
-                  {film.is_4k && (
-                    <span className="px-3 py-1 bg-blue-500 text-white text-sm font-bold rounded">
-                      4K
-                    </span>
-                  )}
-                  {film.awards && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/90 text-black text-sm font-medium rounded">
-                      <Award className="w-3.5 h-3.5" />
-                      {film.awards.split('.')[0].split(',')[0]}
-                    </span>
-                  )}
-                </div>
+                {/* Genre label */}
+                {film.genre && (
+                  <p className="text-white/60 text-[10px] tracking-[0.2em] uppercase mb-2 font-semibold">
+                    GENRE: {film.genre}
+                  </p>
+                )}
 
                 {/* Title */}
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-display font-bold text-white mb-4 leading-tight">
+                <h1 className="text-2xl sm:text-3xl md:text-5xl font-display font-bold text-white mb-2 sm:mb-3 leading-tight">
                   {film.title}
                 </h1>
 
-                {/* Meta Info */}
-                <div className="flex flex-wrap items-center gap-3 text-white/80 text-sm mb-4">
-                  <span className="font-medium">{film.year}</span>
-                  <span className="w-1 h-1 bg-white/50 rounded-full" />
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    {formatDuration(film.duration)}
-                  </span>
-                  <span className="w-1 h-1 bg-white/50 rounded-full" />
-                  <span>{film.genre}</span>
-                </div>
-
                 {/* Synopsis */}
-                <p className="text-white/80 text-base md:text-lg leading-relaxed mb-6 line-clamp-2 md:line-clamp-3">
+                <p className="text-white/80 text-xs sm:text-sm md:text-base leading-relaxed mb-4 sm:mb-5 line-clamp-2">
                   {film.synopsis}
                 </p>
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap items-center gap-3">
-                  <Link
-                    href={`/film/${film.slug}`}
-                    className="inline-flex items-center gap-2 px-6 md:px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    Book Now
-                  </Link>
-                  {film.trailer_url && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="fh-hero-btn">
+                    {film.rating}
+                  </span>
+                  {film.trailer_url ? (
                     <a
                       href={film.trailer_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-5 md:px-6 py-3 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-all backdrop-blur-sm border border-white/20"
+                      className="fh-hero-btn"
                     >
-                      <Play className="w-5 h-5" />
-                      Trailer
+                      TRAILER
                     </a>
+                  ) : (
+                    <span className="fh-hero-btn">TRAILER</span>
                   )}
+                  <Link
+                    href={`/film/${film.slug}`}
+                    className="fh-hero-btn"
+                  >
+                    FULL SYNOPSIS
+                  </Link>
                 </div>
               </div>
             </div>
@@ -180,37 +171,39 @@ export function HeroCarousel({ films, autoPlayInterval = 6000 }: HeroCarouselPro
         );
       })}
 
-      {/* Navigation Arrows */}
+      {/* Navigation Arrows - filmhouse.sg style: large semi-transparent ‹ › */}
       {films.length > 1 && (
         <>
           <button
             onClick={() => { goToPrev(); setIsAutoPlaying(false); }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 bg-black/30 hover:bg-black/50 rounded-full backdrop-blur-sm transition-all hover:scale-110 active:scale-95"
+            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 text-white/30 hover:text-white/70 transition-colors select-none"
+            style={{ fontSize: '4rem', lineHeight: 1, fontWeight: 300 }}
             aria-label="Previous slide"
           >
-            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white" />
+            ‹
           </button>
           <button
             onClick={() => { goToNext(); setIsAutoPlaying(false); }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 md:p-3 bg-black/30 hover:bg-black/50 rounded-full backdrop-blur-sm transition-all hover:scale-110 active:scale-95"
+            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 text-white/30 hover:text-white/70 transition-colors select-none"
+            style={{ fontSize: '4rem', lineHeight: 1, fontWeight: 300 }}
             aria-label="Next slide"
           >
-            <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white" />
+            ›
           </button>
         </>
       )}
 
-      {/* Dots Indicator */}
+      {/* Dots Indicator - bottom left, active = pill, others = small dot */}
       {films.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+        <div className="absolute bottom-6 left-4 sm:left-8 z-20 flex items-center gap-1.5">
           {films.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`rounded-full transition-all duration-300 ${
                 index === currentIndex
-                  ? 'bg-white w-8'
-                  : 'bg-white/40 w-2 hover:bg-white/60'
+                  ? 'bg-white h-2 w-6'
+                  : 'bg-white/40 h-2 w-2 hover:bg-white/60'
               }`}
               aria-label={`Go to slide ${index + 1}`}
             />

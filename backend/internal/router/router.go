@@ -75,6 +75,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	bookingHandler := handlers.NewBookingHandler(db)
 	hallHandler := handlers.NewHallHandler(db)
 	paymentHandler := handlers.NewPaymentHandler(db)
+	programHandler := handlers.NewProgramHandler(db)
 
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
@@ -118,6 +119,13 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 		// Public ticket types
 		api.GET("/ticket-types", screeningHandler.GetTicketTypes)
+
+		// Public program routes
+		programs := api.Group("/programs")
+		{
+			programs.GET("", programHandler.ListPrograms)
+			programs.GET("/:slug", programHandler.GetProgram)
+		}
 
 		// Public hall routes
 		halls := api.Group("/halls")
@@ -207,6 +215,14 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			// Ticket validation/redemption
 			admin.POST("/tickets/validate", bookingHandler.ValidateTicket)
 			admin.POST("/tickets/redeem", bookingHandler.RedeemTicket)
+
+			// Program management
+			admin.GET("/programs", programHandler.AdminListPrograms)
+			admin.POST("/programs", programHandler.AdminCreateProgram)
+			admin.PUT("/programs/:id", programHandler.AdminUpdateProgram)
+			admin.DELETE("/programs/:id", programHandler.AdminDeleteProgram)
+			admin.POST("/programs/:id/films", programHandler.AdminAddFilmToProgram)
+			admin.DELETE("/programs/:id/films/:filmId", programHandler.AdminRemoveFilmFromProgram)
 		}
 	}
 

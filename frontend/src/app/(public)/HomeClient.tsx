@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { format, addDays, isToday } from 'date-fns';
-import { screeningsApi, filmsApi } from '@/lib/api';
+import { format, add, sub } from 'date-fns';
+import { screeningsApi, filmsApi, programsApi } from '@/lib/api';
 import { HeroCarousel } from '@/components/home/HeroCarousel';
-import type { FilmWithScreenings, Film, Screening } from '@/types';
-import { Clock, Award, ChevronRight, Calendar } from 'lucide-react';
+import type { FilmWithScreenings, Film, Screening, Program } from '@/types';
+import { Calendar, Mail, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -18,12 +19,6 @@ function formatTime(dateStr: string) {
   });
 }
 
-function formatDuration(mins: number) {
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return `${h}h ${m}m`;
-}
-
 export default function HomeClient({
   initialDateStr,
   initialFeaturedFilms,
@@ -33,11 +28,24 @@ export default function HomeClient({
   initialFeaturedFilms: Film[];
   initialFilmScreenings: FilmWithScreenings[];
 }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const programSlug = searchParams.get('program');
+
   const [selectedDate, setSelectedDate] = useState(() => new Date(initialDateStr + 'T00:00:00'));
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
 
-  // Generate next 14 days
-  const dates = Array.from({ length: 14 }, (_, i) => addDays(new Date(), i));
+  const goPrevDay = () => setSelectedDate((d) => sub(d, { days: 1 }));
+  const goNextDay = () => setSelectedDate((d) => add(d, { days: 1 }));
+
+  const handlePickDate = (value: string) => {
+    if (!value) return;
+    setSelectedDate(new Date(value + 'T00:00:00'));
+  };
+
+  const clearProgram = () => {
+    router.push('/', { scroll: false });
+  };
 
   const { data: featuredFilms } = useQuery({
     queryKey: ['films', 'featured'],
@@ -49,77 +57,112 @@ export default function HomeClient({
     staleTime: 60_000,
   });
 
-  const { data: filmScreenings, isLoading } = useQuery({
+  // Fetch the selected program details
+  const { data: selectedProgram } = useQuery({
+    queryKey: ['program', programSlug],
+    queryFn: async () => {
+      if (!programSlug) return null;
+      const res = await programsApi.get(programSlug);
+      return res.data as Program;
+    },
+    enabled: !!programSlug,
+    staleTime: 60_000,
+  });
+
+  // Fetch all screenings for the date
+  const { data: allScreenings, isLoading } = useQuery({
     queryKey: ['screenings', dateStr],
     queryFn: async () => {
       const res = await screeningsApi.getByDate(dateStr);
       return res.data as FilmWithScreenings[];
     },
-    initialData: dateStr === initialDateStr ? initialFilmScreenings : undefined,
+    initialData: dateStr === initialDateStr && !programSlug ? initialFilmScreenings : undefined,
     staleTime: 30_000,
   });
 
+  // Filter screenings by program if a program is selected
+  const filmScreenings = useFilteredScreenings(allScreenings, selectedProgram, programSlug);
+
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       {/* Hero Carousel */}
       <HeroCarousel films={featuredFilms || []} />
 
+      {/* Program Filter Banner */}
+      {programSlug && selectedProgram && (
+        <div className="bg-primary/10 border-b border-primary/20">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between py-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs tracking-widest uppercase font-bold text-primary/60">Program:</span>
+                <span className="text-sm font-display font-bold italic text-primary">{selectedProgram.name}</span>
+              </div>
+              <button
+                onClick={clearProgram}
+                className="inline-flex items-center gap-1.5 text-xs tracking-wide uppercase font-semibold text-primary/70 hover:text-primary transition-colors"
+              >
+                Show All Films
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Date Selector - Sticky */}
-      <div className="sticky top-16 z-40 bg-cream/95 backdrop-blur-sm border-b border-gray-200">
+      <div className="sticky top-[72px] z-40 fh-surface backdrop-blur-sm fh-rule">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center py-4 gap-2 overflow-x-auto scrollbar-hide">
-            {dates.map((date) => {
-              const isSelected = format(date, 'yyyy-MM-dd') === dateStr;
-              const isTodayDate = isToday(date);
-              return (
-                <button
-                  key={date.toISOString()}
-                  onClick={() => setSelectedDate(date)}
-                  className={`flex-shrink-0 flex flex-col items-center px-4 py-2.5 rounded-xl transition-all duration-200 min-w-[72px] ${
-                    isSelected
-                      ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-105'
-                      : 'bg-white text-text-secondary hover:bg-gray-50 border border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <span
-                    className={`text-xs font-semibold uppercase tracking-wide ${
-                      isSelected ? 'text-white/90' : isTodayDate ? 'text-primary' : ''
-                    }`}
-                  >
-                    {isTodayDate ? 'Today' : format(date, 'EEE')}
-                  </span>
-                  <span className="text-xl font-bold mt-0.5">{format(date, 'd')}</span>
-                  <span className={`text-xs ${isSelected ? 'text-white/80' : 'text-text-muted'}`}>
-                    {format(date, 'MMM')}
-                  </span>
+          <div className="fh-datebar">
+            <div className="fh-datebar-left">
+              <button type="button" className="fh-datebtn" aria-label="Previous day" onClick={goPrevDay}>
+                ◀
+              </button>
+              <div className="min-w-0">
+                <span className="fh-datelabel">SHOWING </span>
+                <span className="fh-datevalue">{format(selectedDate, 'EEEE do MMMM').toUpperCase()}</span>
+              </div>
+              <button type="button" className="fh-datebtn" aria-label="Next day" onClick={goNextDay}>
+                ▶
+              </button>
+              <div className="relative">
+                <button type="button" className="fh-datebtn" aria-label="Pick a date">
+                  <Calendar className="w-4 h-4" />
                 </button>
-              );
-            })}
+                <input
+                  aria-label="Pick a date"
+                  type="date"
+                  className="fh-dateinput"
+                  value={dateStr}
+                  onChange={(e) => handlePickDate(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="fh-datebar-right hidden sm:flex">
+              <Link href="/mailing-list" className="fh-mailing-link">
+                <span>JOIN OUR MAILING LIST</span>
+                <Mail className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Films List */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-display font-bold text-text-primary">{format(selectedDate, 'EEEE, d MMMM')}</h2>
-          <span className="text-sm text-text-muted">{filmScreenings?.length || 0} films showing</span>
-        </div>
-
+      {/* Films Grid */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {isLoading ? (
-          <div className="space-y-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl p-6 animate-pulse">
-                <div className="flex gap-6">
-                  <div className="w-32 h-48 bg-gray-200 rounded-xl" />
-                  <div className="flex-1 space-y-3">
-                    <div className="h-6 bg-gray-200 rounded w-1/3" />
-                    <div className="h-4 bg-gray-200 rounded w-1/4" />
-                    <div className="h-16 bg-gray-200 rounded" />
-                    <div className="flex gap-2">
-                      <div className="h-12 w-20 bg-gray-200 rounded-lg" />
-                      <div className="h-12 w-20 bg-gray-200 rounded-lg" />
-                      <div className="h-12 w-20 bg-gray-200 rounded-lg" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="fh-film-card animate-pulse">
+                <div className="flex h-[240px]">
+                  <div className="w-[200px] bg-white/30 shrink-0" />
+                  <div className="flex-1 p-4 space-y-3">
+                    <div className="h-5 bg-white/30 rounded w-2/3" />
+                    <div className="h-3 bg-white/30 rounded w-1/2" />
+                    <div className="h-12 bg-white/30 rounded" />
+                    <div className="flex gap-2 mt-auto">
+                      <div className="h-7 w-16 bg-white/30 rounded" />
+                      <div className="h-7 w-16 bg-white/30 rounded" />
                     </div>
                   </div>
                 </div>
@@ -127,47 +170,44 @@ export default function HomeClient({
             ))}
           </div>
         ) : filmScreenings && filmScreenings.length > 0 ? (
-          <div className="space-y-6">
+          <div className="fh-film-grid">
             {filmScreenings.map(({ film, screenings }, idx) => (
-              <FilmRow key={film.id} film={film} screenings={screenings} priority={idx < 2} />
+              <FilmCard key={film.id} film={film} screenings={screenings} priority={idx < 4} />
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl p-12 text-center">
-            <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-text-primary mb-2">No screenings available</h3>
-            <p className="text-text-secondary">Try selecting a different date above.</p>
+          <div className="py-16 text-center">
+            <Calendar className="w-12 h-12 text-primary/30 mx-auto mb-4" />
+            <h3 className="text-lg font-display font-semibold text-text-primary mb-2">No screenings available</h3>
+            <p className="text-sm text-text-secondary">
+              {programSlug ? 'No screenings for this program on this date.' : 'Try selecting a different date above.'}
+            </p>
+            {programSlug && (
+              <button onClick={clearProgram} className="mt-4 fh-btn-outline">
+                Show All Films
+              </button>
+            )}
           </div>
         )}
-      </section>
-
-      {/* Newsletter Section */}
-      <section className="bg-dark text-white py-16 mt-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h3 className="text-2xl font-display font-bold mb-3">Join Our Mailing List</h3>
-          <p className="text-white/70 mb-6 max-w-md mx-auto">
-            Be the first to know about new films, special events, and exclusive offers.
-          </p>
-          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-            />
-            <button
-              type="submit"
-              className="px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors"
-            >
-              Subscribe
-            </button>
-          </form>
-        </div>
       </section>
     </div>
   );
 }
 
-function FilmRow({
+/** Filter screenings by program films */
+function useFilteredScreenings(
+  allScreenings: FilmWithScreenings[] | undefined,
+  selectedProgram: Program | null | undefined,
+  programSlug: string | null,
+): FilmWithScreenings[] | undefined {
+  if (!allScreenings) return undefined;
+  if (!programSlug || !selectedProgram?.films) return allScreenings;
+
+  const programFilmIds = new Set(selectedProgram.films.map((f) => f.id));
+  return allScreenings.filter(({ film }) => programFilmIds.has(film.id));
+}
+
+function FilmCard({
   film,
   screenings,
   priority,
@@ -179,99 +219,78 @@ function FilmRow({
   const posterUrl = film.poster_url || null;
 
   return (
-    <article className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group">
-      <div className="flex flex-col md:flex-row">
-        {/* Poster */}
-        <Link href={`/film/${film.slug}`} className="md:w-44 flex-shrink-0 relative overflow-hidden">
-          <div className="relative aspect-[2/3] md:aspect-auto md:h-full">
-            {posterUrl ? (
-              <Image
-                src={posterUrl}
-                alt={film.title}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, 176px"
-                priority={!!priority}
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center min-h-[200px]">
-                <span className="text-5xl">🎬</span>
-              </div>
-            )}
-          </div>
+    <article className="fh-film-card flex flex-col">
+      <div className="flex flex-1">
+        {/* Poster — fills full card height */}
+        <Link
+          href={`/film/${film.slug}`}
+          className="relative w-[160px] sm:w-[200px] shrink-0 overflow-hidden bg-white/30"
+        >
+          {posterUrl ? (
+            <Image
+              src={posterUrl}
+              alt={film.title}
+              fill
+              className="object-cover"
+              sizes="170px"
+              priority={!!priority}
+            />
+          ) : (
+            <div className="w-full h-full bg-white/20" />
+          )}
         </Link>
 
         {/* Content */}
-        <div className="flex-1 p-5 md:p-6">
-          {/* Awards Badge */}
-          {film.awards && (
-            <div className="flex items-center gap-1.5 text-xs text-primary mb-2">
-              <Award className="w-3.5 h-3.5 fill-primary/20" />
-              <span className="font-medium line-clamp-1">{film.awards.split('.')[0]}</span>
-            </div>
-          )}
-
-          {/* Title */}
+        <div className="min-w-0 flex-1 p-3 sm:p-4 flex flex-col">
           <Link href={`/film/${film.slug}`}>
-            <h3 className="text-xl md:text-2xl font-display font-bold text-text-primary hover:text-primary transition-colors mb-2">
+            <h3 className="text-base sm:text-lg font-display font-bold italic text-primary leading-tight hover:text-primary-dark transition-colors">
               {film.title}
             </h3>
           </Link>
 
-          {/* Meta Info */}
-          <div className="flex flex-wrap items-center gap-2 md:gap-3 text-sm text-text-secondary mb-3">
+          <div className="mt-1 text-xs sm:text-sm text-text-secondary leading-relaxed">
             <span className="font-semibold text-text-primary">{film.year}</span>
-            <span className="w-1 h-1 bg-gray-300 rounded-full" />
-            <span className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              {formatDuration(film.duration)}
-            </span>
-            <span className="w-1 h-1 bg-gray-300 rounded-full" />
-            <span className="px-2 py-0.5 bg-primary text-white text-xs font-bold rounded">{film.rating}</span>
-            <span className="w-1 h-1 bg-gray-300 rounded-full hidden sm:block" />
-            <span className="hidden sm:inline">{film.genre}</span>
-            {film.is_4k && <span className="px-2 py-0.5 bg-blue-500 text-white text-xs font-bold rounded">4K</span>}
+            <span className="mx-1">|</span>
+            <span>{film.duration}mins</span>
+            <span className="mx-1">|</span>
+            <span>({film.rating})</span>
+            {film.genre ? (
+              <>
+                <span className="mx-1">|</span>
+                <span>{film.genre}</span>
+              </>
+            ) : null}
           </div>
 
-          {/* Synopsis */}
-          <p className="text-text-secondary text-sm line-clamp-2 mb-3">{film.synopsis}</p>
-
-          {/* Language Info */}
-          {film.language && (
-            <p className="text-xs text-text-muted mb-4">
-              In {film.language}
-              {film.subtitles && ` with ${film.subtitles} subtitles`}
+          {film.synopsis ? (
+            <p className="mt-2 text-xs sm:text-sm text-text-secondary leading-relaxed line-clamp-3">
+              {film.synopsis}
             </p>
-          )}
+          ) : null}
 
-          {/* Screenings */}
-          <div className="flex flex-wrap items-center gap-2 md:gap-3">
-            {screenings.slice(0, 5).map((screening) => (
-              <Link
-                key={screening.id}
-                href={`/book/${screening.id}`}
-                className="group/btn inline-flex flex-col items-center px-4 py-2.5 bg-cream hover:bg-primary rounded-xl transition-all duration-200 border border-gray-200 hover:border-primary hover:shadow-md"
-              >
-                <span className="text-sm font-bold text-text-primary group-hover/btn:text-white transition-colors">
-                  {formatTime(screening.start_time)}
-                </span>
-                <span className="text-xs text-text-muted group-hover/btn:text-white/80 transition-colors">
-                  {screening.hall?.name || 'Main'}
-                </span>
-                {screening.hall?.is_4k && (
-                  <span className="mt-1 px-1.5 py-0.5 bg-blue-500 text-white text-[10px] font-bold rounded">4K</span>
-                )}
+          {/* Showtimes */}
+          <div className="mt-auto pt-3 flex flex-wrap items-center gap-1.5">
+            {screenings.slice(0, 3).map((screening) => (
+              <Link key={screening.id} href={`/book/${screening.id}`} className="fh-pill-solid">
+                {formatTime(screening.start_time)}
               </Link>
             ))}
 
-            {screenings.length > 5 && (
-              <Link href={`/film/${film.slug}`} className="text-sm text-primary hover:text-primary-dark font-medium">
-                View all ({screenings.length})
-                <ChevronRight className="inline w-4 h-4 ml-1" />
-              </Link>
+            {film.is_4k && (
+              <span className="fh-badge-4k">4K</span>
             )}
           </div>
         </div>
+      </div>
+
+      {/* Other dates — bottom of card, after content area */}
+      <div className="border-t border-[rgba(139,35,50,0.15)] ml-[160px] sm:ml-[200px] px-3 sm:px-4 py-2">
+        <Link
+          href={`/film/${film.slug}`}
+          className="fh-btn-outline-red"
+        >
+          Other dates
+        </Link>
       </div>
     </article>
   );

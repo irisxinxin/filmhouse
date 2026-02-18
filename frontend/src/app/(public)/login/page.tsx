@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Logo } from '@/components/brand/Logo';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 import { Mail, Lock, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
@@ -68,8 +69,8 @@ function LoginForm() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="input pl-12 w-full"
-              placeholder="you@example.com"
+              className="input !pl-12 w-full"
+              placeholder=""
               required
               autoComplete="email"
             />
@@ -92,8 +93,8 @@ function LoginForm() {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="input pl-12 pr-12 w-full"
-              placeholder="••••••••"
+              className="input !pl-12 !pr-12 w-full"
+              placeholder=""
               required
               autoComplete="current-password"
             />
@@ -151,10 +152,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <h2 className="text-2xl font-display font-bold text-text-primary">FILMHOUSE</h2>
-          </Link>
-          <p className="text-text-muted mt-2">Sign in to your account</p>
+          <span className="inline-flex items-center rounded-xl bg-primary px-4 py-2 shadow-sm">
+            <Logo priority className="inline-flex items-center justify-center" imageClassName="h-7 w-auto" />
+          </span>
+          <p className="text-text-muted mt-3">Sign in to your account</p>
         </div>
 
         <div className="bg-white rounded-2xl p-8 shadow-sm">
