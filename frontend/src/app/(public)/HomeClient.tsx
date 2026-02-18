@@ -99,10 +99,10 @@ export default function HomeClient({
       <div className="sticky top-[88px] z-40 fh-surface backdrop-blur-sm fh-rule">
         <div className="max-w-[1335px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="fh-datebar">
-            <div className="fh-datebar-left flex items-center gap-2">
+            <div className="fh-datebar-left flex items-center gap-1.5 sm:gap-2">
               <button
                 onClick={() => setSelectedDate(null)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-base font-bold tracking-wide transition-all duration-200 ${
+                className={`flex items-center gap-1.5 px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg text-sm sm:text-base font-bold tracking-wide transition-all duration-200 ${
                   !selectedDate
                     ? 'bg-primary text-white shadow-md'
                     : 'bg-transparent text-primary border border-primary/30 hover:bg-primary/10'
@@ -112,13 +112,13 @@ export default function HomeClient({
               </button>
               <button
                 onClick={() => setSelectedDate(selectedDate || new Date())}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-base font-bold tracking-wide transition-all duration-200 ${
+                className={`flex items-center gap-1.5 px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg text-sm sm:text-base font-bold tracking-wide transition-all duration-200 ${
                   selectedDate
                     ? 'bg-primary text-white shadow-md'
                     : 'bg-transparent text-primary border border-primary/30 hover:bg-primary/10'
                 }`}
               >
-                <CalendarDays className="w-5 h-5" />
+                <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5" />
                 Browse by Date
               </button>
             </div>
@@ -152,7 +152,7 @@ export default function HomeClient({
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="fh-film-card animate-pulse">
                 <div className="flex min-h-[400px]">
-                  <div className="w-[200px] sm:w-[260px] lg:w-[300px] bg-white/30 shrink-0" />
+                  <div className="w-[140px] sm:w-[260px] lg:w-[300px] bg-white/30 shrink-0" />
                   <div className="flex-1 p-4 space-y-3">
                     <div className="h-5 bg-white/30 rounded w-2/3" />
                     <div className="h-3 bg-white/30 rounded w-1/2" />
@@ -232,7 +232,7 @@ function FilmCard({ film, priority, selectedDate }: { film: Film; priority?: boo
     <article className="fh-film-card h-full flex flex-col">
       <div className="flex flex-1">
         <Link href={`/film/${film.slug}`}
-          className="group relative w-[200px] sm:w-[260px] lg:w-[300px] shrink-0 overflow-hidden bg-white/30">
+          className="group relative w-[140px] sm:w-[260px] lg:w-[300px] shrink-0 overflow-hidden bg-white/30">
           {posterUrl ? (
             <Image src={posterUrl} alt={film.title} fill className="object-cover" sizes="280px" priority={!!priority} />
           ) : (
@@ -260,8 +260,8 @@ function FilmCard({ film, priority, selectedDate }: { film: Film; priority?: boo
       </div>
 
       {/* Bottom bar */}
-      <div className="fh-card-bottom border-t border-primary/10 px-4 sm:px-5 py-3 flex items-center justify-between gap-3 transition-all duration-300">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="fh-card-bottom border-t border-primary/10 px-4 sm:px-5 py-3 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-3 transition-all duration-300">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {selectedDate ? (
             /* Date selected: show showtimes for that date */
             (() => {
@@ -269,11 +269,11 @@ function FilmCard({ film, priority, selectedDate }: { film: Film; priority?: boo
               const sessions = screeningsByDate[dateKey] || [];
               return (
                 <>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
+                  <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-text-secondary">
                     {formatShortDate(selectedDate.toISOString())}
                   </span>
                   {sessions.map((s) => (
-                    <Link key={s.id} href={`/book/${s.id}`} className="fh-pill-solid hover:opacity-80 transition-opacity">
+                    <Link key={s.id} href={`/book/${s.id}`} className="fh-pill-solid text-[11px] sm:text-xs hover:opacity-80 transition-opacity">
                       {formatTime(s.start_time)}
                     </Link>
                   ))}
@@ -284,12 +284,12 @@ function FilmCard({ film, priority, selectedDate }: { film: Film; priority?: boo
             /* No date selected: show date pills */
             <>
               {screeningDates.slice(0, 3).map((d) => (
-                <Link key={d.dateKey} href={`/film/${film.slug}`} className="fh-pill-solid hover:opacity-80 transition-opacity">
+                <Link key={d.dateKey} href={`/film/${film.slug}`} className="fh-pill-solid text-[11px] sm:text-xs hover:opacity-80 transition-opacity">
                   {d.label}
                 </Link>
               ))}
               {screeningDates.length > 3 && (
-                <Link href={`/film/${film.slug}`} className="text-sm font-bold text-primary hover:text-primary-dark transition-colors whitespace-nowrap">
+                <Link href={`/film/${film.slug}`} className="text-xs sm:text-sm font-bold text-primary hover:text-primary-dark transition-colors whitespace-nowrap">
                   +{screeningDates.length - 3} more
                 </Link>
               )}
@@ -299,7 +299,7 @@ function FilmCard({ film, priority, selectedDate }: { film: Film; priority?: boo
             </>
           )}
         </div>
-        <Link href={`/film/${film.slug}`} className="fh-btn-outline-red shrink-0">
+        <Link href={`/film/${film.slug}`} className="fh-btn-outline-red shrink-0 text-xs sm:text-sm">
           Book tickets
         </Link>
       </div>
