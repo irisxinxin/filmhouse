@@ -4,9 +4,11 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"net/http"
 	"net/smtp"
 	"os"
+	"strings"
 	"time"
 
 	"filmhouse-backend/internal/config"
@@ -293,24 +295,8 @@ func (h *AuthHandler) ValidateResetToken(c *gin.Context) {
 }
 
 func (h *AuthHandler) sendResetEmail(to, firstName, resetLink string) error {
-	smtpHost := os.Getenv("SMTP_HOST")
-	smtpPort := os.Getenv("SMTP_PORT")
-	smtpUser := os.Getenv("SMTP_USER")
-	smtpPass := os.Getenv("SMTP_PASS")
-	fromEmail := os.Getenv("SMTP_FROM")
-
-	if smtpHost == "" {
-		// Demo mode - just log the link
-		fmt.Printf("=== PASSWORD RESET LINK (Demo Mode) ===\n")
-		fmt.Printf("To: %s\n", to)
-		fmt.Printf("Link: %s\n", resetLink)
-		fmt.Printf("========================================\n")
-		return nil
-	}
-
-	if fromEmail == "" {
-		fromEmail = "noreply@filmhouse.sg"
-	}
+	resendKey := os.Getenv("RESEND_API_KEY")
+	fromEmail := os.Getenv("EMAIL_FROM")
 
 	name := firstName
 	if name == "" {
@@ -318,22 +304,63 @@ func (h *AuthHandler) sendResetEmail(to, firstName, resetLink string) error {
 	}
 
 	subject := "Reset Your Filmhouse Password"
-	body := fmt.Sprintf(`Hi %s,
+	htmlBody := fmt.Sprintf(`<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+<h2 style="color: #910101;">Filmhouse</h2>
+<p>Hi %s,</p>
+<p>You requested to reset your password for your Filmhouse account.</p>
+<p><a href="%s" style="display: inline-block; padding: 12px 24px; background: #910101; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Reset Password</a></p>
+<p style="color: #666; font-size: 13px;">This link is valid for 1 hour. If you didn't request this, please ignore this email.</p>
+<p>Best regards,<br>Filmhouse Team</p>
+</div>`, name, resetLink)
 
-You requested to reset your password for your Filmhouse account.
+	if resendKey == "" {
+		// Fallback: try SMTP
+		smtpHost := os.Getenv("SMTP_HOST")
+		if smtpHost == "" {
+			fmt.Printf("=== PASSWORD RESET LINK (Demo Mode) ===\n")
+			fmt.Printf("To: %s\n", to)
+			fmt.Printf("Link: %s\n", resetLink)
+			fmt.Printf("========================================\n")
+			return nil
+		}
+		smtpPort := os.Getenv("SMTP_PORT")
+		smtpUser := os.Getenv("SMTP_USER")
+		smtpPass := os.Getenv("SMTP_PASS")
+		if fromEmail == "" {
+			fromEmail = "noreply@filmhouse.sg"
+		}
+		msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\nContent-Type: text/html\r\n\r\n%s",
+			fromEmail, to, subject, htmlBody)
+		auth := smtp.PlainAuth("", smtpUser, smtpPass, smtpHost)
+		return smtp.SendMail(smtpHost+":"+smtpPort, auth, fromEmail, []string{to}, []byte(msg))
+	}
 
-Click the link below to reset your password (valid for 1 hour):
-%s
+	// Use Resend HTTP API
+	if fromEmail == "" {
+		fromEmail = "Filmhouse <onboarding@resend.dev>"
+	}
 
-If you didn't request this, please ignore this email.
+	payload := fmt.Sprintf(`{"from":"%s","to":["%s"],"subject":"%s","html":"%s"}`,
+		fromEmail, to, subject, strings.ReplaceAll(strings.ReplaceAll(htmlBody, `"`, `\"`), "\n", ""))
 
-Best regards,
-Filmhouse Team
-`, name, resetLink)
+	req, err := http.NewRequest("POST", "https://api.resend.com/emails", strings.NewReader(payload))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+resendKey)
+	req.Header.Set("Content-Type", "application/json")
 
-	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s",
-		fromEmail, to, subject, body)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("resend request failed: %w", err)
+	}
+	defer resp.Body.Close()
 
-	auth := smtp.PlainAuth("", smtpUser, smtpPass, smtpHost)
-	return smtp.SendMail(smtpHost+":"+smtpPort, auth, fromEmail, []string{to}, []byte(msg))
+	if resp.StatusCode >= 400 {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("resend API error %d: %s", resp.StatusCode, string(body))
+	}
+
+	fmt.Printf("Password reset email sent to %s via Resend\n", to)
+	return nil
 }
