@@ -151,16 +151,16 @@ export function HeroCarousel({ films, autoPlayInterval = 6000 }: HeroCarouselPro
                       href={film.trailer_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="fh-hero-btn"
+                      className="fh-hero-btn-filled"
                     >
                       TRAILER
                     </a>
                   ) : (
-                    <span className="fh-hero-btn">TRAILER</span>
+                    <span className="fh-hero-btn-filled">TRAILER</span>
                   )}
                   <Link
                     href={`/film/${film.slug}`}
-                    className="fh-hero-btn"
+                    className="fh-hero-btn-filled"
                   >
                     FULL SYNOPSIS
                   </Link>

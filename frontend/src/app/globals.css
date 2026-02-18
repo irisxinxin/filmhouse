@@ -283,6 +283,27 @@ body {
     color: var(--color-primary);
   }
 
+  .fh-hero-btn-filled {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    border: 1.5px solid var(--color-primary);
+    border-radius: 4px;
+    color: white;
+    background: var(--color-primary);
+    transition: background 150ms ease, color 150ms ease;
+    cursor: pointer;
+  }
+
+  .fh-hero-btn-filled:hover {
+    background: white;
+    color: var(--color-primary);
+  }
+
   /* ── Mailing list link ── */
   .fh-mailing-link {
     display: inline-flex;

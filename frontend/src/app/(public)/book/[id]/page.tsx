@@ -246,7 +246,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
   }));
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream pt-2">
       {/* Film Info Header */}
       <div className="bg-primary text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

@@ -250,13 +250,13 @@ function FilmCard({
 
           <div className="mt-1.5 text-[13px] text-text-secondary leading-relaxed">
             <span className="font-bold text-primary">{film.year}</span>
-            <span className="mx-1.5">|</span>
+            <span className="mx-1.5"> | </span>
             <span>{film.duration}mins</span>
-            <span className="mx-1.5">|</span>
+            <span className="mx-1.5"> | </span>
             <span>({film.rating})</span>
             {film.genre ? (
               <>
-                <span className="mx-1.5">|</span>
+                <span className="mx-1.5"> | </span>
                 <span>{film.genre}</span>
               </>
             ) : null}
