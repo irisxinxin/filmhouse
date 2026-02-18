@@ -234,7 +234,7 @@ function FilmCard({ film, priority, selectedDate }: { film: Film; priority?: boo
         <Link href={`/film/${film.slug}`}
           className="group relative w-[140px] sm:w-[260px] lg:w-[300px] shrink-0 overflow-hidden bg-white/30">
           {posterUrl ? (
-            <Image src={posterUrl} alt={film.title} fill className="object-cover" sizes="280px" priority={!!priority} />
+            <Image src={posterUrl} alt={film.title} fill className="object-cover" sizes="(max-width: 639px) 140px, (max-width: 1024px) 260px, 300px" priority={!!priority} />
           ) : (
             <div className="w-full h-full bg-white/20" />
           )}
