@@ -23,7 +23,7 @@ export function FilmCard({ film, screenings = [], showScreenings = true }: FilmC
         {/* Poster */}
         <Link 
           href={`/film/${film.slug}`} 
-          className="relative w-36 sm:w-44 aspect-[2/3] flex-shrink-0 overflow-hidden"
+          className="relative w-[40%] sm:w-44 max-w-[200px] aspect-[2/3] flex-shrink-0 overflow-hidden"
         >
           {posterUrl ? (
             <Image
@@ -31,7 +31,7 @@ export function FilmCard({ film, screenings = [], showScreenings = true }: FilmC
               alt={film.title}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 640px) 144px, 176px"
+              sizes="(max-width: 640px) 40vw, 176px"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
@@ -85,7 +85,7 @@ export function FilmCard({ film, screenings = [], showScreenings = true }: FilmC
           </div>
 
           {/* Synopsis */}
-          <p className="mt-2 text-sm text-gray-600 line-clamp-2 flex-grow">
+          <p className="mt-2 text-sm text-gray-600 line-clamp-2 sm:line-clamp-3 flex-grow">
             {film.synopsis}
           </p>
 
