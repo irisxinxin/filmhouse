@@ -281,8 +281,9 @@ func (h *HallHandler) BulkCreateSeats(c *gin.Context) {
 		return
 	}
 
-	// Delete existing seats
-	h.db.Where("hall_id = ?", hall.ID).Delete(&models.Seat{})
+	// Delete existing seats and their ticket references (FK constraint)
+	h.db.Exec("DELETE t FROM tickets t INNER JOIN seats s ON t.seat_id = s.id WHERE s.hall_id = ?", hall.ID)
+	h.db.Exec("DELETE FROM seats WHERE hall_id = ?", hall.ID)
 
 	// Create aisle map
 	aisleMap := make(map[int]bool)
@@ -375,8 +376,11 @@ func (h *HallHandler) SaveLayout(c *gin.Context) {
 		return
 	}
 
-	// Delete existing seats
-	h.db.Where("hall_id = ?", hall.ID).Delete(&models.Seat{})
+	// Delete existing seats and their ticket references (FK constraint)
+	// First delete tickets that reference seats in this hall
+	h.db.Exec("DELETE t FROM tickets t INNER JOIN seats s ON t.seat_id = s.id WHERE s.hall_id = ?", hall.ID)
+	// Then delete the seats
+	h.db.Exec("DELETE FROM seats WHERE hall_id = ?", hall.ID)
 
 	// Create seats from layout
 	var seats []models.Seat
