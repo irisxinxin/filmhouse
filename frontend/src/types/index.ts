@@ -44,7 +44,25 @@ export interface Hall {
   name: string;
   capacity: number;
   is_4k: boolean;
+  seat_layout?: string;
   seats?: Seat[];
+}
+
+// Seat layout types for the visual editor
+export interface SeatLayoutCell {
+  type: 'seat' | 'aisle' | 'empty';
+  number?: number;
+  seat_type?: string;
+  disabled?: boolean;
+}
+
+export interface SeatLayoutRow {
+  label: string;
+  seats: SeatLayoutCell[];
+}
+
+export interface SeatLayout {
+  rows: SeatLayoutRow[];
 }
 
 export interface Seat {

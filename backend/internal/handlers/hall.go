@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"filmhouse-backend/internal/models"
@@ -8,6 +9,23 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
+
+// SeatLayout JSON structures
+type SeatLayoutCell struct {
+	Type     string `json:"type"`               // "seat", "aisle", "empty"
+	Number   int    `json:"number,omitempty"`    // seat number (only for type=seat)
+	SeatType string `json:"seat_type,omitempty"` // standard, premium, wheelchair
+	Disabled bool   `json:"disabled,omitempty"`  // broken/disabled seat
+}
+
+type SeatLayoutRow struct {
+	Label string           `json:"label"` // "A", "B", etc.
+	Seats []SeatLayoutCell `json:"seats"`
+}
+
+type SeatLayout struct {
+	Rows []SeatLayoutRow `json:"rows"`
+}
 
 type HallHandler struct {
 	db *gorm.DB
@@ -307,5 +325,99 @@ func (h *HallHandler) BulkCreateSeats(c *gin.Context) {
 		"message": "Seats created",
 		"count":   len(seats),
 		"seats":   seats,
+	})
+}
+
+// GetLayout returns the saved seat layout for a hall
+func (h *HallHandler) GetLayout(c *gin.Context) {
+	hallID := c.Param("id")
+
+	var hall models.Hall
+	if err := h.db.First(&hall, hallID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Hall not found"})
+		return
+	}
+
+	if hall.SeatLayout == "" {
+		c.JSON(http.StatusOK, gin.H{"rows": []interface{}{}})
+		return
+	}
+
+	var layout SeatLayout
+	if err := json.Unmarshal([]byte(hall.SeatLayout), &layout); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse layout"})
+		return
+	}
+
+	c.JSON(http.StatusOK, layout)
+}
+
+// SaveLayout saves a custom seat layout and regenerates seat records
+func (h *HallHandler) SaveLayout(c *gin.Context) {
+	hallID := c.Param("id")
+
+	var hall models.Hall
+	if err := h.db.First(&hall, hallID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Hall not found"})
+		return
+	}
+
+	var layout SeatLayout
+	if err := c.ShouldBindJSON(&layout); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Serialize layout to JSON
+	layoutJSON, err := json.Marshal(layout)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to serialize layout"})
+		return
+	}
+
+	// Delete existing seats
+	h.db.Where("hall_id = ?", hall.ID).Delete(&models.Seat{})
+
+	// Create seats from layout
+	var seats []models.Seat
+	for _, row := range layout.Rows {
+		for _, cell := range row.Seats {
+			if cell.Type != "seat" {
+				continue
+			}
+			seatType := cell.SeatType
+			if seatType == "" {
+				seatType = "standard"
+			}
+			seats = append(seats, models.Seat{
+				HallID:   hall.ID,
+				Row:      row.Label,
+				Number:   cell.Number,
+				SeatType: seatType,
+				IsActive: !cell.Disabled,
+			})
+		}
+	}
+
+	if len(seats) > 0 {
+		if err := h.db.Create(&seats).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create seats"})
+			return
+		}
+	}
+
+	// Update hall
+	hall.SeatLayout = string(layoutJSON)
+	hall.Capacity = len(seats)
+	if err := h.db.Save(&hall).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update hall"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "Layout saved",
+		"seat_count":  len(seats),
+		"seat_layout": layout,
+		"seats":       seats,
 	})
 }

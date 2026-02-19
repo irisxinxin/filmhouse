@@ -202,6 +202,8 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			admin.GET("/halls/:id/seats", hallHandler.GetSeats)
 			admin.POST("/halls/:id/seats", hallHandler.CreateSeat)
 			admin.POST("/halls/:id/seats/bulk", hallHandler.BulkCreateSeats)
+			admin.GET("/halls/:id/layout", hallHandler.GetLayout)
+			admin.POST("/halls/:id/layout", hallHandler.SaveLayout)
 			admin.PUT("/halls/:id/seats/:seat_id", hallHandler.UpdateSeat)
 			admin.DELETE("/halls/:id/seats/:seat_id", hallHandler.DeleteSeat)
 			admin.POST("/halls/:id/seats/:seat_id/toggle", hallHandler.ToggleSeatStatus)

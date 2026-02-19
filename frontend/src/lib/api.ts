@@ -180,6 +180,10 @@ export const adminApi = {
     api.post(`/admin/halls/${hallId}/seats/${seatId}/toggle`),
   bulkUpdateSeats: (data: { seat_ids: number[]; is_active?: boolean; seat_type?: string }) =>
     api.post('/admin/seats/bulk-update', data),
+  saveLayout: (hallId: number, layout: SeatLayout) =>
+    api.post(`/admin/halls/${hallId}/layout`, layout),
+  getLayout: (hallId: number) =>
+    api.get(`/admin/halls/${hallId}/layout`),
 
   // Bookings
   listBookings: (params?: { status?: string; screening_id?: number }) =>
@@ -200,4 +204,4 @@ export const adminApi = {
     api.delete(`/admin/programs/${programId}/films/${filmId}`),
 };
 
-import type { Film, Hall } from '@/types';
+import type { Film, Hall, SeatLayout } from '@/types';

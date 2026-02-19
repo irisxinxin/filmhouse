@@ -399,6 +399,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
                 onSeatClick={handleSeatClick}
                 onRemoveFromCart={(seatId) => removeItemsBySeat(Number(id), seatId)}
                 disabled={false}
+                seatLayout={screening.hall?.seat_layout}
               />
             </div>
           </div>

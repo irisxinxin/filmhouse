@@ -1,6 +1,7 @@
 package database
 
 import (
+	"encoding/json"
 	"log"
 	"time"
 
@@ -9,6 +10,153 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
+
+// Layout helper types
+type seedCell struct {
+	Type     string `json:"type"`
+	Number   int    `json:"number,omitempty"`
+	SeatType string `json:"seat_type,omitempty"`
+	Disabled bool   `json:"disabled,omitempty"`
+}
+type seedRow struct {
+	Label string     `json:"label"`
+	Seats []seedCell `json:"seats"`
+}
+type seedLayout struct {
+	Rows []seedRow `json:"rows"`
+}
+
+// buildRow creates a row with a center aisle. seatsLeft seats, then an aisle, then seatsRight seats.
+func buildRow(label string, seatsLeft, seatsRight int) seedRow {
+	r := seedRow{Label: label}
+	num := 1
+	for i := 0; i < seatsLeft; i++ {
+		r.Seats = append(r.Seats, seedCell{Type: "seat", Number: num, SeatType: "standard"})
+		num++
+	}
+	r.Seats = append(r.Seats, seedCell{Type: "aisle"})
+	for i := 0; i < seatsRight; i++ {
+		r.Seats = append(r.Seats, seedCell{Type: "seat", Number: num, SeatType: "standard"})
+		num++
+	}
+	return r
+}
+
+// buildRowWithSideAisles creates: sideLeft seats | aisle | centerLeft seats | aisle | centerRight seats | aisle | sideRight seats
+func buildRowWithSideAisles(label string, sideLeft, centerLeft, centerRight, sideRight int) seedRow {
+	r := seedRow{Label: label}
+	num := 1
+	for i := 0; i < sideLeft; i++ {
+		r.Seats = append(r.Seats, seedCell{Type: "seat", Number: num, SeatType: "standard"})
+		num++
+	}
+	r.Seats = append(r.Seats, seedCell{Type: "aisle"})
+	for i := 0; i < centerLeft; i++ {
+		r.Seats = append(r.Seats, seedCell{Type: "seat", Number: num, SeatType: "standard"})
+		num++
+	}
+	r.Seats = append(r.Seats, seedCell{Type: "aisle"})
+	for i := 0; i < centerRight; i++ {
+		r.Seats = append(r.Seats, seedCell{Type: "seat", Number: num, SeatType: "standard"})
+		num++
+	}
+	r.Seats = append(r.Seats, seedCell{Type: "aisle"})
+	for i := 0; i < sideRight; i++ {
+		r.Seats = append(r.Seats, seedCell{Type: "seat", Number: num, SeatType: "standard"})
+		num++
+	}
+	return r
+}
+
+// Green Room: 230 seats, 14 rows (A-N)
+// Rows A-B: 2+5+5+2=14 (front rows slightly narrower, closer to screen)
+// Rows C-J: 2+6+6+2=16
+// Rows K-N: 3+6+6+3=18 (wider back rows)
+// Total: 2×14 + 8×16 + 4×18 = 28+128+72 = 228... need 230
+// Adjust: rows A-B=14, C-H=16, I-J=17, K-N=18 → 2×14+6×16+2×17+4×18 = 28+96+34+72 = 230 ✓
+func generateGreenRoomLayout() string {
+	layout := seedLayout{}
+	rowLabels := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"}
+	for i, label := range rowLabels {
+		switch {
+		case i >= 10: // rows K-N: widest back rows
+			layout.Rows = append(layout.Rows, buildRowWithSideAisles(label, 3, 6, 6, 3))
+		case i >= 8: // rows I-J: slightly wider
+			layout.Rows = append(layout.Rows, buildRowWithSideAisles(label, 3, 6, 5, 3))
+		case i >= 2: // rows C-H
+			layout.Rows = append(layout.Rows, buildRowWithSideAisles(label, 2, 6, 6, 2))
+		default: // rows A-B: front rows, narrower
+			layout.Rows = append(layout.Rows, buildRowWithSideAisles(label, 2, 5, 5, 2))
+		}
+	}
+	b, _ := json.Marshal(layout)
+	return string(b)
+}
+
+// Redrum: 200 seats, 13 rows (A-M)
+// Rows A-D: 2+5+5+2=14
+// Rows E-H: 2+6+6+2=16
+// Rows I-J: 3+5+5+3=16
+// Rows K-M: 3+6+6+3=18
+// Total: 4×14 + 4×16 + 2×16 + 3×18 = 56+64+32+54 = 206... need 200
+// Adjust: A-F=14, G-J=16, K-M=18 → 6×14+4×16+3×18 = 84+64+54 = 202
+// Adjust: A-F=14, G-I=16, J=14, K-M=18 → 6×14+3×16+1×14+3×18 = 84+48+14+54 = 200 ✓
+func generateRedrumLayout() string {
+	layout := seedLayout{}
+	rowLabels := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M"}
+	for i, label := range rowLabels {
+		switch {
+		case i >= 10: // rows K-M: widest back
+			layout.Rows = append(layout.Rows, buildRowWithSideAisles(label, 3, 6, 6, 3))
+		case i == 9: // row J: transition row, slightly narrower
+			layout.Rows = append(layout.Rows, buildRowWithSideAisles(label, 2, 5, 5, 2))
+		case i >= 6: // rows G-I
+			layout.Rows = append(layout.Rows, buildRowWithSideAisles(label, 3, 5, 5, 3))
+		default: // rows A-F
+			layout.Rows = append(layout.Rows, buildRowWithSideAisles(label, 2, 5, 5, 2))
+		}
+	}
+	b, _ := json.Marshal(layout)
+	return string(b)
+}
+
+// Blue Room: 100 seats, 10 rows (A-J), ~11-12 seats/row
+// Center aisle only, no side aisles (smallest hall)
+// Layout per row: 5 | aisle | 5 = 10 seats
+func generateBlueRoomLayout() string {
+	layout := seedLayout{}
+	rowLabels := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"}
+	for _, label := range rowLabels {
+		layout.Rows = append(layout.Rows, buildRow(label, 5, 5))
+	}
+	b, _ := json.Marshal(layout)
+	return string(b)
+}
+
+func seatsFromLayout(hallID uint, layoutJSON string) []models.Seat {
+	var layout seedLayout
+	json.Unmarshal([]byte(layoutJSON), &layout)
+	var seats []models.Seat
+	for _, row := range layout.Rows {
+		for _, cell := range row.Seats {
+			if cell.Type != "seat" {
+				continue
+			}
+			st := cell.SeatType
+			if st == "" {
+				st = "standard"
+			}
+			seats = append(seats, models.Seat{
+				HallID:   hallID,
+				Row:      row.Label,
+				Number:   cell.Number,
+				SeatType: st,
+				IsActive: !cell.Disabled,
+			})
+		}
+	}
+	return seats
+}
 
 func Seed(db *gorm.DB) error {
 	log.Println("Seeding database...")
@@ -34,48 +182,61 @@ func Seed(db *gorm.DB) error {
 	}
 	db.FirstOrCreate(&admin, models.User{Email: admin.Email})
 
-	// Seed halls
-	halls := []models.Hall{
-		{Name: "Blue Room 1", Capacity: 80, Is4K: false},
-		{Name: "Blue Room 2", Capacity: 60, Is4K: false},
-		{Name: "Blue Room 3", Capacity: 100, Is4K: true},
+	// Seed halls with realistic Filmhouse layouts
+	greenLayout := generateGreenRoomLayout()
+	blueLayout := generateBlueRoomLayout()
+	redrumLayout := generateRedrumLayout()
+
+	type hallDef struct {
+		Name     string
+		Is4K     bool
+		Layout   string
 	}
-	for i := range halls {
-		db.FirstOrCreate(&halls[i], models.Hall{Name: halls[i].Name})
+	hallDefs := []hallDef{
+		{Name: "Green Room", Is4K: true, Layout: greenLayout},
+		{Name: "Blue Room", Is4K: false, Layout: blueLayout},
+		{Name: "Redrum", Is4K: false, Layout: redrumLayout},
 	}
 
-	// Seed seats for each hall
+	halls := make([]models.Hall, 0, len(hallDefs))
+	for _, hd := range hallDefs {
+		var existing models.Hall
+		result := db.Where("name = ?", hd.Name).First(&existing)
+		if result.Error == gorm.ErrRecordNotFound {
+			existing = models.Hall{
+				Name:       hd.Name,
+				Is4K:       hd.Is4K,
+				SeatLayout: hd.Layout,
+				IsActive:   true,
+			}
+			db.Create(&existing)
+		} else {
+			// Update layout if empty
+			if existing.SeatLayout == "" || existing.SeatLayout == "null" {
+				existing.SeatLayout = hd.Layout
+				db.Save(&existing)
+			}
+		}
+		halls = append(halls, existing)
+	}
+
+	// Seed seats from layouts
 	for _, hall := range halls {
-		var existingHall models.Hall
-		db.Where("name = ?", hall.Name).First(&existingHall)
-		
 		var seatCount int64
-		db.Model(&models.Seat{}).Where("hall_id = ?", existingHall.ID).Count(&seatCount)
+		db.Model(&models.Seat{}).Where("hall_id = ?", hall.ID).Count(&seatCount)
 		if seatCount > 0 {
 			continue
 		}
-
-		// Create seats based on hall capacity
-		rows := []string{"A", "B", "C", "D", "E", "F", "G"}
-		seatsPerRow := existingHall.Capacity / len(rows)
-		
-		for _, row := range rows {
-			for num := 1; num <= seatsPerRow; num++ {
-				seat := models.Seat{
-					HallID:   existingHall.ID,
-					Row:      row,
-					Number:   num,
-					SeatType: "standard",
-					IsActive: true,
-				}
-				// Skip some seats to create aisles (like filmhouse.sg)
-				if (num == 3 || num == 4) && row != "B" && row != "G" {
-					continue
-				}
-				db.Create(&seat)
-			}
+		seats := seatsFromLayout(hall.ID, hall.SeatLayout)
+		if len(seats) > 0 {
+			db.Create(&seats)
+			db.Model(&models.Hall{}).Where("id = ?", hall.ID).Update("capacity", len(seats))
 		}
 	}
+
+	// Deactivate old halls that don't match new names
+	oldHallNames := []string{"Blue Room 1", "Blue Room 2", "Blue Room 3"}
+	db.Model(&models.Hall{}).Where("name IN ?", oldHallNames).Update("is_active", false)
 
 	// Seed sample films (matching Filmhouse SG)
 	films := []models.Film{

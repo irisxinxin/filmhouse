@@ -99,14 +99,15 @@ type Film struct {
 
 // Hall represents a cinema hall/room
 type Hall struct {
-	ID        uint      `gorm:"primaryKey" json:"id"`
-	Name      string    `gorm:"size:100;not null" json:"name"`
-	Capacity  int       `json:"capacity"`
-	Is4K      bool      `gorm:"default:false" json:"is_4k"`
-	IsActive  bool      `gorm:"default:true" json:"is_active"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Seats     []Seat    `gorm:"foreignKey:HallID" json:"seats,omitempty"`
+	ID         uint      `gorm:"primaryKey" json:"id"`
+	Name       string    `gorm:"size:100;not null" json:"name"`
+	Capacity   int       `json:"capacity"`
+	Is4K       bool      `gorm:"default:false" json:"is_4k"`
+	IsActive   bool      `gorm:"default:true" json:"is_active"`
+	SeatLayout string    `gorm:"type:json" json:"seat_layout"` // JSON: defines the visual grid layout
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	Seats      []Seat    `gorm:"foreignKey:HallID" json:"seats,omitempty"`
 }
 
 // Seat represents a seat in a hall
