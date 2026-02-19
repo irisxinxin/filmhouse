@@ -11,7 +11,7 @@ interface HeroCarouselProps {
   autoPlayInterval?: number;
 }
 
-export function HeroCarousel({ films, autoPlayInterval = 6000 }: HeroCarouselProps) {
+export function HeroCarousel({ films, autoPlayInterval = 3500 }: HeroCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
