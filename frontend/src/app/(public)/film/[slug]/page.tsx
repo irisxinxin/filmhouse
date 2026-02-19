@@ -85,7 +85,7 @@ export default function FilmDetailPage() {
           {/* Left: Poster */}
           <div className="fh-detail-poster">
             <div className="relative w-full aspect-[2/3] overflow-hidden">
-              <Image src={posterUrl} alt={film.title} fill className="object-cover" priority />
+              <Image src={posterUrl} alt={film.title} fill className="object-cover" priority quality={75} sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px" />
             </div>
             {film.trailer_url && (
               <a href={film.trailer_url} target="_blank" rel="noopener noreferrer"
