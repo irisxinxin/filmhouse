@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
-import { loadStripe } from '@stripe/stripe-js';
 import { useCartStore } from '@/stores/cart';
 import { useAuthStore } from '@/stores/auth';
 import { bookingsApi, paymentApi } from '@/lib/api';
@@ -20,11 +19,6 @@ interface InvalidSeat {
   reason: string;
 }
 
-// Initialize Stripe
-const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-  : null;
-
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, guestInfo, clearCart, clearExpiredItems, getTotal, removeItem } = useCartStore();
@@ -33,7 +27,6 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'paynow'>('card');
   const [expiredItems, setExpiredItems] = useState<string[]>([]);
   const [processingError, setProcessingError] = useState<string | null>(null);
-  const [useStripe, setUseStripe] = useState(true);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
   const [isCheckoutComplete, setIsCheckoutComplete] = useState(false);
   const [invalidSeats, setInvalidSeats] = useState<InvalidSeat[]>([]);
@@ -137,113 +130,7 @@ export default function CheckoutPage() {
     }
   }, [hydrated, items.length, isAuthenticated, guestInfo, router, isCheckoutComplete]);
 
-  // Create booking and redirect to Stripe
-  const stripeCheckoutMutation = useMutation({
-    mutationFn: async () => {
-      // Group items by screening with ticket type info
-      const screeningGroups = items.reduce((acc, item) => {
-        if (!acc[item.screeningId]) {
-          acc[item.screeningId] = [];
-        }
-        acc[item.screeningId].push({
-          seat_id: item.seatId,
-          ticket_type_id: item.ticketTypeId || 1,
-        });
-        return acc;
-      }, {} as Record<number, { seat_id: number; ticket_type_id: number }[]>);
-
-      // Create bookings for each screening
-      const bookings = [];
-      for (const [screeningId, tickets] of Object.entries(screeningGroups)) {
-        let res;
-        if (isAuthenticated) {
-          const seatIds = tickets.map(t => t.seat_id);
-          res = await bookingsApi.create(
-            parseInt(screeningId),
-            seatIds,
-            paymentMethod
-          );
-        } else {
-          res = await bookingsApi.createGuestBooking(
-            parseInt(screeningId),
-            tickets,
-            paymentMethod,
-            guestInfo || undefined
-          );
-        }
-        bookings.push(res.data);
-      }
-
-      // For now, use the first booking for Stripe checkout
-      // In production, you might want to combine multiple bookings
-      const booking = bookings[0];
-      
-      // Create Stripe checkout session
-      const baseUrl = window.location.origin;
-      const successUrl = `${baseUrl}/checkout/success`;
-      const cancelUrl = `${baseUrl}/checkout?cancelled=true`;
-      
-      const sessionRes = await paymentApi.createCheckoutSession(
-        booking.id,
-        successUrl,
-        cancelUrl
-      );
-
-      return { bookings, session: sessionRes.data };
-    },
-    onSuccess: async ({ bookings, session }) => {
-      if (session.demo_mode) {
-        // Demo mode - authenticated bookings require explicit demo confirmation.
-        // Guest bookings are auto-confirmed by the backend.
-        try {
-          if (isAuthenticated) {
-            for (const booking of bookings) {
-              await paymentApi.demoConfirm(booking.id);
-            }
-          }
-          setIsCheckoutComplete(true);
-          clearCart();
-          const bookingRefs = bookings.map((b: { booking_ref: string }) => b.booking_ref).join(',');
-          router.push(`/checkout/success?refs=${bookingRefs}`);
-        } catch (err) {
-          setProcessingError('Failed to confirm booking. Please try again.');
-        }
-        return;
-      }
-
-      // Redirect to Stripe Checkout using the URL from backend
-      if (session.checkout_url) {
-        window.location.href = session.checkout_url;
-      } else {
-        setProcessingError('Failed to get checkout URL');
-      }
-    },
-    onError: (err: unknown) => {
-      // Extract error message from various error formats
-      let message = 'Failed to create checkout session';
-      if (err instanceof Error) {
-        message = err.message;
-      } else if (typeof err === 'object' && err !== null) {
-        const axiosErr = err as { response?: { data?: { error?: string } }; message?: string };
-        message = axiosErr.response?.data?.error || axiosErr.message || message;
-      }
-      
-      // Make error messages more user-friendly
-      if (message.includes('already booked')) {
-        setProcessingError('One or more seats you selected are no longer available. Please go back and select different seats.');
-      } else if (message.includes('locked')) {
-        setProcessingError('These seats are currently being held by another customer. Please try again in a few minutes or select different seats.');
-      } else if (message.includes('expired')) {
-        setProcessingError('Your seat reservation has expired. Please go back and select your seats again.');
-      } else if (message.includes('409') || message.includes('status code 409')) {
-        setProcessingError('One or more seats you selected are no longer available. Please go back and select different seats.');
-      } else {
-        setProcessingError(message);
-      }
-    },
-  });
-
-  // Demo checkout (fallback when Stripe not configured)
+  // Process checkout - create bookings and confirm with demo payment
   const demoCheckoutMutation = useMutation({
     mutationFn: async () => {
       // Group items by screening with ticket type info
@@ -318,11 +205,7 @@ export default function CheckoutPage() {
     const isValid = await validateCartSeats();
     if (!isValid) return;
     
-    if (useStripe && stripePromise) {
-      stripeCheckoutMutation.mutate();
-    } else {
-      demoCheckoutMutation.mutate();
-    }
+    demoCheckoutMutation.mutate();
   };
 
   const getTimeRemaining = (expiresAt: number) => {
@@ -362,7 +245,7 @@ export default function CheckoutPage() {
     return acc;
   }, {} as Record<string, { filmTitle: string; filmPoster: string; screeningDate: string; screeningTime: string; hallName: string; items: typeof items }>);
 
-  const isProcessing = stripeCheckoutMutation.isPending || demoCheckoutMutation.isPending;
+  const isProcessing = demoCheckoutMutation.isPending;
 
   return (
     <div className="min-h-screen bg-cream">
@@ -585,25 +468,6 @@ export default function CheckoutPage() {
                   </div>
                 </label>
               </div>
-
-              {/* Demo mode toggle */}
-              <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-amber-700">
-                    {useStripe && stripePromise 
-                      ? '💳 Stripe test mode enabled' 
-                      : '⚠️ Demo mode: Payment will be simulated'}
-                  </p>
-                  {stripePromise && (
-                    <button
-                      onClick={() => setUseStripe(!useStripe)}
-                      className="text-xs text-amber-600 underline hover:text-amber-800"
-                    >
-                      {useStripe ? 'Use demo mode' : 'Use Stripe'}
-                    </button>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
 
@@ -653,7 +517,7 @@ export default function CheckoutPage() {
                 ) : (
                   <>
                     <Check className="w-5 h-5" />
-                    {useStripe && stripePromise ? 'Pay with Stripe' : 'Complete Payment'}
+                    Complete Payment
                   </>
                 )}
               </button>

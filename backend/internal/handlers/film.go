@@ -12,7 +12,6 @@ import (
 	"filmhouse-backend/internal/models"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/gosimple/slug"
 	"gorm.io/gorm"
 )
@@ -202,25 +201,25 @@ func (h *FilmHandler) UploadPoster(c *gin.Context) {
 		return
 	}
 
-	// Create uploads directory if not exists
-	uploadDir := "./uploads/posters"
+	// Save to frontend public directory so Next.js can serve it directly
+	uploadDir := "../frontend/public/images/films"
 	if err := os.MkdirAll(uploadDir, 0755); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create upload directory"})
 		return
 	}
 
-	// Generate unique filename
-	filename := fmt.Sprintf("%s-%s%s", film.Slug, uuid.New().String()[:8], ext)
-	filepath := filepath.Join(uploadDir, filename)
+	// Use slug-based filename for clean URLs
+	filename := fmt.Sprintf("%s%s", film.Slug, ext)
+	savePath := filepath.Join(uploadDir, filename)
 
 	// Save file
-	if err := c.SaveUploadedFile(file, filepath); err != nil {
+	if err := c.SaveUploadedFile(file, savePath); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
 		return
 	}
 
-	// Update film poster URL
-	film.PosterURL = "/uploads/posters/" + filename
+	// Update film poster URL (relative path served by Next.js)
+	film.PosterURL = "/images/films/" + filename
 	if err := h.db.Save(&film).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update film"})
 		return
@@ -255,15 +254,15 @@ func (h *FilmHandler) UploadBanner(c *gin.Context) {
 		return
 	}
 
-	// Create uploads directory if not exists
-	uploadDir := "./uploads/banners"
+	// Save to frontend public directory so Next.js can serve it directly
+	uploadDir := "../frontend/public/images/banners"
 	if err := os.MkdirAll(uploadDir, 0755); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create upload directory"})
 		return
 	}
 
-	// Generate unique filename
-	filename := fmt.Sprintf("%s-banner-%s%s", film.Slug, uuid.New().String()[:8], ext)
+	// Use slug-based filename for clean URLs
+	filename := fmt.Sprintf("%s-banner%s", film.Slug, ext)
 	savePath := filepath.Join(uploadDir, filename)
 
 	// Save file
@@ -272,8 +271,8 @@ func (h *FilmHandler) UploadBanner(c *gin.Context) {
 		return
 	}
 
-	// Update film banner URL
-	film.BannerURL = "/uploads/banners/" + filename
+	// Update film banner URL (relative path served by Next.js)
+	film.BannerURL = "/images/banners/" + filename
 	if err := h.db.Save(&film).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update film"})
 		return

@@ -72,11 +72,11 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {bookings.slice(0, 10).map((booking: { id: number; booking_ref: string; screening?: { film?: { title: string } }; user?: { email: string }; final_amount: number; status: string }) => (
+                {bookings.slice(0, 10).map((booking: { id: number; booking_ref: string; screening?: { film?: { title: string } }; user?: { email: string }; guest_name?: string; guest_email?: string; final_amount: number; status: string }) => (
                   <tr key={booking.id} className="border-b border-gray-800">
                     <td className="py-3 font-mono text-sm">{booking.booking_ref}</td>
                     <td className="py-3">{booking.screening?.film?.title || '-'}</td>
-                    <td className="py-3 text-gray-400">{booking.user?.email || '-'}</td>
+                    <td className="py-3 text-gray-400">{booking.user?.email || booking.guest_email || booking.guest_name || 'Guest'}</td>
                     <td className="py-3">${booking.final_amount.toFixed(2)}</td>
                     <td className="py-3">
                       <span className={`px-2 py-1 rounded text-xs ${

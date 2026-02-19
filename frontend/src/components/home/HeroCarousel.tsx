@@ -146,7 +146,7 @@ export function HeroCarousel({ films, autoPlayInterval = 6000 }: HeroCarouselPro
                   <span className="fh-hero-btn text-sm px-5 py-2.5">
                     {film.rating}
                   </span>
-                  {film.trailer_url ? (
+                  {film.trailer_url && (
                     <a
                       href={film.trailer_url}
                       target="_blank"
@@ -155,14 +155,18 @@ export function HeroCarousel({ films, autoPlayInterval = 6000 }: HeroCarouselPro
                     >
                       TRAILER
                     </a>
-                  ) : (
-                    <span className="fh-hero-btn-filled text-sm px-5 py-2.5">TRAILER</span>
                   )}
                   <Link
                     href={`/film/${film.slug}`}
                     className="fh-hero-btn-filled text-sm px-5 py-2.5"
                   >
                     FULL SYNOPSIS
+                  </Link>
+                  <Link
+                    href={`/film/${film.slug}#screenings`}
+                    className="fh-hero-btn-filled text-sm px-5 py-2.5 !bg-white !text-black hover:!bg-white/90"
+                  >
+                    BOOK NOW
                   </Link>
                 </div>
               </div>

@@ -38,12 +38,11 @@ interface Booking {
   tickets: Array<{
     id: number;
     price: number;
-    is_redeemed: boolean;
     seat: {
       id: number;
-      label: string;
-      row_name: string;
-      seat_number: number;
+      row: string;
+      number: number;
+      seat_type: string;
     };
   }>;
 }
@@ -284,9 +283,6 @@ export default function AdminBookingsPage() {
                       <div className="flex items-center gap-1">
                         <Ticket className="w-4 h-4 text-gray-400" />
                         <span className="text-white">{booking.tickets?.length || 0}</span>
-                        <span className="text-gray-400 text-xs">
-                          ({booking.tickets?.filter(t => t.is_redeemed).length || 0} used)
-                        </span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-white font-medium">
@@ -414,18 +410,15 @@ export default function AdminBookingsPage() {
                     <div key={ticket.id} className="p-3 flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <span className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center text-white font-medium">
-                          {ticket.seat.label}
+                          {ticket.seat.row}{ticket.seat.number}
                         </span>
                         <div>
-                          <p className="text-white text-sm">Seat {ticket.seat.label}</p>
-                          <p className="text-gray-400 text-xs">Row {ticket.seat.row_name}</p>
+                          <p className="text-white text-sm">Seat {ticket.seat.row}{ticket.seat.number}</p>
+                          <p className="text-gray-400 text-xs">Row {ticket.seat.row}</p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="text-white">{formatCurrency(ticket.price)}</p>
-                        {ticket.is_redeemed && (
-                          <span className="text-xs text-green-400">✓ Redeemed</span>
-                        )}
                       </div>
                     </div>
                   ))}

@@ -194,7 +194,23 @@ export default function AdminSettingsPage() {
                   <label className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors">
                     <Upload className="w-4 h-4" />
                     <span className="text-sm">Upload Banner</span>
-                    <input type="file" accept="image/*" className="hidden" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const formData = new FormData();
+                        formData.append('banner', file);
+                        try {
+                          await adminApi.uploadBanner(film.id, formData);
+                          queryClient.invalidateQueries({ queryKey: ['admin', 'films'] });
+                        } catch {
+                          alert('Failed to upload banner');
+                        }
+                      }}
+                    />
                   </label>
                 </div>
               </div>

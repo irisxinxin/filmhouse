@@ -141,7 +141,7 @@ export default function FilmDetailPage() {
           </div>
 
           {/* Right: Screenings by date */}
-          <div className="fh-detail-screenings">
+          <div id="screenings" className="fh-detail-screenings">
             {sortedDates.length > 0 ? (
               sortedDates.map((date) => (
                 <div key={date} className="fh-detail-daterow">

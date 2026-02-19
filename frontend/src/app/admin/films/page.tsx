@@ -122,7 +122,7 @@ export default function AdminFilmsPage() {
                 {/* Poster */}
                 <div className="relative w-24 h-36 flex-shrink-0 rounded-lg overflow-hidden bg-gray-800 group">
                   {film.poster_url ? (
-                    <Image src={film.poster_url.startsWith('http') ? film.poster_url : `${API_BASE}${film.poster_url}`} alt={film.title} fill className="object-cover" />
+                    <Image src={film.poster_url} alt={film.title} fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-600">
                       <FilmIcon className="w-8 h-8" />
