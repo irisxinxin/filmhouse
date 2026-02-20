@@ -104,6 +104,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			films.GET("/featured", filmHandler.Featured)
 			films.GET("/:id", filmHandler.Get)
 			films.GET("/:id/screenings", filmHandler.GetScreenings)
+			films.GET("/:id/programs", filmHandler.GetFilmPrograms)
 		}
 
 		// Public screening routes

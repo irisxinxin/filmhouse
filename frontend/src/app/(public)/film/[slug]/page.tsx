@@ -2,12 +2,12 @@
 
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { filmsApi } from '@/lib/api';
+import { filmsApi, programsApi } from '@/lib/api';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import type { Film, Screening } from '@/types';
+import type { Film, Screening, Program } from '@/types';
 
 export default function FilmDetailPage() {
   const params = useParams();
@@ -28,6 +28,17 @@ export default function FilmDetailPage() {
       if (!film?.id) return [];
       const res = await filmsApi.getScreenings(film.id);
       return (res.data || []) as Screening[];
+    },
+    enabled: !!film?.id,
+  });
+
+  // Fetch programs this film belongs to
+  const { data: filmPrograms } = useQuery({
+    queryKey: ['film-programs', film?.id],
+    queryFn: async () => {
+      if (!film?.id) return [];
+      const res = await filmsApi.getPrograms(film.id);
+      return (res.data || []) as Program[];
     },
     enabled: !!film?.id,
   });
@@ -92,6 +103,39 @@ export default function FilmDetailPage() {
                 className="fh-pill-solid w-full mt-4 justify-center py-3 text-center">
                 ▶ TRAILER
               </a>
+            )}
+
+            {/* Programs - "Featured As Part Of" */}
+            {filmPrograms && filmPrograms.length > 0 && (
+              <div className="mt-6">
+                <p className="text-sm font-semibold tracking-wide text-[#5a4a3a] mb-3" style={{ letterSpacing: '0.05em' }}>
+                  Featured As Part Of
+                </p>
+                <div className="flex flex-col gap-2">
+                  {filmPrograms.map((program) => (
+                    <Link
+                      key={program.id}
+                      href={`/?program=${program.slug}`}
+                      className="block w-full text-center py-2.5 px-4 border-2 text-sm font-semibold tracking-wide transition-colors"
+                      style={{
+                        borderColor: '#8B2332',
+                        color: '#8B2332',
+                        background: 'transparent',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#8B2332';
+                        e.currentTarget.style.color = '#fff';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = '#8B2332';
+                      }}
+                    >
+                      {program.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 

@@ -283,3 +283,27 @@ func (h *FilmHandler) UploadBanner(c *gin.Context) {
 		"banner_url": film.BannerURL,
 	})
 }
+
+// GetFilmPrograms returns all active programs that a film belongs to
+func (h *FilmHandler) GetFilmPrograms(c *gin.Context) {
+	filmID := c.Param("id")
+
+	var programFilms []models.ProgramFilm
+	h.db.Where("film_id = ?", filmID).Find(&programFilms)
+
+	if len(programFilms) == 0 {
+		c.JSON(http.StatusOK, []models.Program{})
+		return
+	}
+
+	var programIDs []uint
+	for _, pf := range programFilms {
+		programIDs = append(programIDs, pf.ProgramID)
+	}
+
+	var programs []models.Program
+	h.db.Where("id IN ? AND is_active = ?", programIDs, true).
+		Order("sort_order ASC").Find(&programs)
+
+	c.JSON(http.StatusOK, programs)
+}

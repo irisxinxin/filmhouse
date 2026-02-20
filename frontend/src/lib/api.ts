@@ -67,6 +67,7 @@ export const filmsApi = {
   get: (id: string | number) => api.get(`/films/${id}`),
   getScreenings: (id: string | number, date?: string) =>
     api.get(`/films/${id}/screenings`, { params: { date } }),
+  getPrograms: (id: string | number) => api.get(`/films/${id}/programs`),
 };
 
 // Screenings API

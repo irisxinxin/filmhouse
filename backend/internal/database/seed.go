@@ -68,27 +68,59 @@ func buildRowWithSideAisles(label string, sideLeft, centerLeft, centerRight, sid
 	return r
 }
 
-// Green Room: 230 seats, 14 rows (A-N)
-// Rows A-B: 2+5+5+2=14 (front rows slightly narrower, closer to screen)
-// Rows C-J: 2+6+6+2=16
-// Rows K-N: 3+6+6+3=18 (wider back rows)
-// Total: 2×14 + 8×16 + 4×18 = 28+128+72 = 228... need 230
-// Adjust: rows A-B=14, C-H=16, I-J=17, K-N=18 → 2×14+6×16+2×17+4×18 = 28+96+34+72 = 230 ✓
+// Green Room layout based on filmhouse.sg Green Room 2 seatmap
+// 14 rows (N-A, N=back, A=front near screen)
+// Right side has isolated 2-seat sections for rows B-F
+// Row A is very short (6 seats), back rows are widest (25-28 seats)
 func generateGreenRoomLayout() string {
 	layout := seedLayout{}
-	rowLabels := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"}
-	for i, label := range rowLabels {
-		switch {
-		case i >= 10: // rows K-N: widest back rows
-			layout.Rows = append(layout.Rows, buildRowWithSideAisles(label, 3, 6, 6, 3))
-		case i >= 8: // rows I-J: slightly wider
-			layout.Rows = append(layout.Rows, buildRowWithSideAisles(label, 3, 6, 5, 3))
-		case i >= 2: // rows C-H
-			layout.Rows = append(layout.Rows, buildRowWithSideAisles(label, 2, 6, 6, 2))
-		default: // rows A-B: front rows, narrower
-			layout.Rows = append(layout.Rows, buildRowWithSideAisles(label, 2, 5, 5, 2))
+	// Helper: build a custom row from segment specs: [count, -1=aisle, 0=empty]
+	type seg struct{ n int } // positive=seats, 0=aisle, -1=empty
+	makeRow := func(label string, segs ...int) seedRow {
+		r := seedRow{Label: label}
+		num := 1
+		for _, s := range segs {
+			if s == 0 {
+				r.Seats = append(r.Seats, seedCell{Type: "aisle"})
+			} else if s < 0 {
+				for i := 0; i < -s; i++ {
+					r.Seats = append(r.Seats, seedCell{Type: "empty"})
+				}
+			} else {
+				for i := 0; i < s; i++ {
+					r.Seats = append(r.Seats, seedCell{Type: "seat", Number: num, SeatType: "standard"})
+					num++
+				}
+			}
 		}
+		return r
 	}
+	// From screenshot (bottom=screen, top=back): N,M,L, gap, K,H,G,F,E,D,C,B, A
+	// N: 13 seats | aisle | 12 seats = 25
+	layout.Rows = append(layout.Rows, makeRow("N", 13, 0, 12))
+	// M: 13 seats | aisle | 12 seats = 25
+	layout.Rows = append(layout.Rows, makeRow("M", 13, 0, 12))
+	// L: 13 seats | aisle | 12 seats = 25
+	layout.Rows = append(layout.Rows, makeRow("L", 13, 0, 12))
+	// K: 12 seats | aisle | 12 seats = 24
+	layout.Rows = append(layout.Rows, makeRow("K", 12, 0, 12))
+	// H: 12 seats | aisle | 12 seats = 24
+	layout.Rows = append(layout.Rows, makeRow("H", 12, 0, 12))
+	// G: 12 seats | aisle | 10 seats | aisle | 2 seats = 24
+	layout.Rows = append(layout.Rows, makeRow("G", 12, 0, 10, 0, 2))
+	// F: 11 seats | aisle | 11 seats | aisle | 2 seats = 24
+	layout.Rows = append(layout.Rows, makeRow("F", 11, 0, 11, 0, 2))
+	// E: 10 seats | aisle | 12 seats | aisle | 2 seats = 24
+	layout.Rows = append(layout.Rows, makeRow("E", 10, 0, 12, 0, 2))
+	// D: 10 seats | aisle | 12 seats | aisle | 2 seats = 24
+	layout.Rows = append(layout.Rows, makeRow("D", 10, 0, 12, 0, 2))
+	// C: 9 seats | aisle | 12 seats | aisle | 2 seats = 23
+	layout.Rows = append(layout.Rows, makeRow("C", 9, 0, 12, 0, 2))
+	// B: 9 seats | aisle | 13 seats | aisle | 2 seats = 24
+	layout.Rows = append(layout.Rows, makeRow("B", 9, 0, 13, 0, 2))
+	// A: 6 seats (front row, very short, centered)
+	layout.Rows = append(layout.Rows, makeRow("A", -4, 6, -4))
+
 	b, _ := json.Marshal(layout)
 	return string(b)
 }
