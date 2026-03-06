@@ -537,10 +537,11 @@ body {
   @media (max-width: 639px) {
     .fh-detail-layout {
       flex-direction: column;
-      gap: 16px;
+      gap: 18px;
     }
     .fh-detail-poster {
-      width: 180px;
+      width: 100%;
+      max-width: 320px;
       margin: 0 auto;
     }
     .fh-detail-info {
@@ -549,6 +550,11 @@ body {
     }
     .fh-detail-screenings {
       width: 100%;
+      margin-top: 6px;
+    }
+    .fh-detail-meta {
+      font-size: 14px;
+      line-height: 22px;
     }
     .fh-detail-synopsis {
       font-size: 14px;
