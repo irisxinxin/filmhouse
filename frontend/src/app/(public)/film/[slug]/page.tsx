@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { filmsApi, programsApi } from '@/lib/api';
@@ -19,6 +20,8 @@ export default function FilmDetailPage() {
       const res = await filmsApi.get(slug);
       return res.data as Film;
     },
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   // Fetch ALL upcoming screenings for this film (single request, no date filter)
@@ -30,6 +33,8 @@ export default function FilmDetailPage() {
       return (res.data || []) as Screening[];
     },
     enabled: !!film?.id,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   // Fetch programs this film belongs to
@@ -41,6 +46,8 @@ export default function FilmDetailPage() {
       return (res.data || []) as Program[];
     },
     enabled: !!film?.id,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   const formatTime = (dateStr: string) =>
@@ -48,13 +55,16 @@ export default function FilmDetailPage() {
       hour: 'numeric', minute: '2-digit', hour12: true,
     }).toLowerCase();
 
-  const screeningsByDate = (allScreenings || []).reduce<Record<string, Screening[]>>((acc, s) => {
-    const date = s.start_time.split('T')[0];
-    if (!acc[date]) acc[date] = [];
-    acc[date].push(s);
-    return acc;
-  }, {});
-  const sortedDates = Object.keys(screeningsByDate).sort();
+  const screeningsByDate = useMemo(() => {
+    return (allScreenings || []).reduce<Record<string, Screening[]>>((acc, s) => {
+      const date = s.start_time.split('T')[0];
+      if (!acc[date]) acc[date] = [];
+      acc[date].push(s);
+      return acc;
+    }, {});
+  }, [allScreenings]);
+
+  const sortedDates = useMemo(() => Object.keys(screeningsByDate).sort(), [screeningsByDate]);
 
   const getYoutubeId = (url: string) => {
     const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=))([^&?]+)/);
@@ -179,7 +189,7 @@ export default function FilmDetailPage() {
               <div className="mt-8">
                 <iframe width="100%" height="350"
                   src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
-                  frameBorder="0" allowFullScreen className="w-full" />
+                  frameBorder="0" allowFullScreen loading="lazy" title={`${film.title} trailer`} className="w-full" />
               </div>
             )}
           </div>
