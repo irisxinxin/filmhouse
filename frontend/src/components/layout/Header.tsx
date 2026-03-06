@@ -70,11 +70,12 @@ export function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Logo
+              href="/"
               priority
               width={176}
               height={90}
               imageClassName="h-12 w-auto"
-              className="block"
+              className="block cursor-pointer"
             />
           </div>
 
