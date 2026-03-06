@@ -165,7 +165,7 @@ export default function HomeClient({
         ) : films && films.length > 0 ? (
           <div className="fh-film-grid">
             {films.map((film, idx) => (
-              <FilmCard key={film.id} film={film} priority={idx < 4} selectedDate={selectedDate} />
+              <FilmCard key={film.id} film={film} priority={idx < 4} index={idx} selectedDate={selectedDate} />
             ))}
           </div>
         ) : (
@@ -190,8 +190,19 @@ function formatShortDate(dateStr: string) {
   return d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
-function FilmCard({ film, priority, selectedDate }: { film: Film; priority?: boolean; selectedDate?: Date | null }) {
+function FilmCard({
+  film,
+  priority,
+  index,
+  selectedDate,
+}: {
+  film: Film;
+  priority?: boolean;
+  index: number;
+  selectedDate?: Date | null;
+}) {
   const posterUrl = film.poster_url || null;
+  const shouldFetchScreenings = priority || !!selectedDate || index < 6;
 
   // Fetch upcoming screenings for this film
   const { data: screenings } = useQuery({
@@ -200,7 +211,9 @@ function FilmCard({ film, priority, selectedDate }: { film: Film; priority?: boo
       const res = await filmsApi.getScreenings(film.id);
       return (res.data || []) as Screening[];
     },
+    enabled: shouldFetchScreenings,
     staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   const upcomingScreenings = (screenings || []).slice(0, 20);
@@ -234,7 +247,16 @@ function FilmCard({ film, priority, selectedDate }: { film: Film; priority?: boo
         <Link href={`/film/${film.slug}`}
           className="group relative w-[140px] sm:w-[260px] lg:w-[300px] shrink-0 overflow-hidden bg-white/30">
           {posterUrl ? (
-            <Image src={posterUrl} alt={film.title} fill className="object-cover" sizes="(max-width: 639px) 140px, (max-width: 1024px) 260px, 300px" priority={!!priority} />
+            <Image
+              src={posterUrl}
+              alt={film.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 639px) 140px, (max-width: 1024px) 260px, 300px"
+              priority={!!priority}
+              loading={priority ? 'eager' : 'lazy'}
+              quality={70}
+            />
           ) : (
             <div className="w-full h-full bg-white/20" />
           )}
@@ -294,7 +316,9 @@ function FilmCard({ film, priority, selectedDate }: { film: Film; priority?: boo
                 </Link>
               )}
               {screeningDates.length === 0 && (
-                <span className="text-xs text-text-secondary italic">Coming soon</span>
+                <span className="text-xs text-text-secondary italic">
+                  {shouldFetchScreenings ? 'Coming soon' : 'View showtimes'}
+                </span>
               )}
             </>
           )}
