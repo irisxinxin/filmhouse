@@ -493,11 +493,11 @@ func Seed(db *gorm.DB) error {
 		}
 	}
 
-	// Seed screenings for the next 7 days (only for films that are NOT coming soon)
+	// Seed screenings through end of April (only for films that are NOT coming soon)
 
 	now := time.Now()
-	for day := 0; day < 7; day++ {
-		date := now.AddDate(0, 0, day)
+	endDate := time.Date(now.Year(), time.April, 30, 0, 0, 0, 0, time.Local)
+	for date := now; !date.After(endDate); date = date.AddDate(0, 0, 1) {
 		for _, film := range allFilms {
 			for i, hall := range allHalls {
 				// Create 2-3 screenings per film per day
