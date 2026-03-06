@@ -201,7 +201,7 @@ export default function HomeClient({
                 <FilmCard
                   key={film.id}
                   film={film}
-                  priority={idx < 4}
+                  priority={idx < 2}
                   selectedDate={selectedDate}
                   screenings={screenings}
                   hasSelectedDate={!!selectedDateStr}
@@ -274,17 +274,18 @@ function FilmCard({
     <article className="fh-film-card h-full flex flex-col">
       <div className="flex flex-1">
         <Link href={`/film/${film.slug}`}
-          className="group relative w-[140px] sm:w-[260px] lg:w-[300px] shrink-0 overflow-hidden bg-white/30">
+          className="group relative w-[120px] sm:w-[260px] lg:w-[300px] shrink-0 overflow-hidden bg-white/30">
           {posterUrl ? (
             <Image
               src={posterUrl}
               alt={film.title}
               fill
               className="object-cover"
-              sizes="(max-width: 639px) 140px, (max-width: 1024px) 260px, 300px"
+              sizes="(max-width: 639px) 120px, (max-width: 1024px) 260px, 300px"
               priority={!!priority}
               loading={priority ? 'eager' : 'lazy'}
-              quality={70}
+              fetchPriority={priority ? 'high' : 'low'}
+              quality={60}
             />
           ) : (
             <div className="w-full h-full bg-white/20" />
