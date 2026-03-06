@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { filmsApi, programsApi } from '@/lib/api';
+import { filmsApi, programsApi, screeningsApi } from '@/lib/api';
 import { HeroCarousel } from '@/components/home/HeroCarousel';
 import { DateSelector } from '@/components/ui/DatePicker';
 import type { Film, Screening, Program } from '@/types';
 import { Mail, X, CalendarDays } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { isSameDay } from 'date-fns';
+import { isSameDay, format } from 'date-fns';
 
 function formatTime(dateStr: string) {
   return new Date(dateStr).toLocaleTimeString('en-US', {
@@ -63,6 +63,35 @@ export default function HomeClient({
     },
     enabled: !!programSlug,
     staleTime: 60_000,
+  });
+
+  const selectedDateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
+
+  const { data: homeScreenings } = useQuery({
+    queryKey: ['screenings', 'home'],
+    queryFn: async () => {
+      const res = await screeningsApi.getHome({ days: 30, limit: 3 });
+      return (res.data || {}) as Record<string, Screening[]>;
+    },
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: dateScreenings } = useQuery({
+    queryKey: ['screenings', 'date', selectedDateStr],
+    queryFn: async () => {
+      if (!selectedDateStr) return {} as Record<number, Screening[]>;
+      const res = await screeningsApi.getByDate(selectedDateStr);
+      const items = (res.data || []) as { film: Film; screenings: Screening[] }[];
+      const map: Record<number, Screening[]> = {};
+      items.forEach((item) => {
+        map[item.film.id] = item.screenings;
+      });
+      return map;
+    },
+    enabled: !!selectedDateStr,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
   // Filter by program if selected
@@ -164,9 +193,21 @@ export default function HomeClient({
           </div>
         ) : films && films.length > 0 ? (
           <div className="fh-film-grid">
-            {films.map((film, idx) => (
-              <FilmCard key={film.id} film={film} priority={idx < 4} index={idx} selectedDate={selectedDate} />
-            ))}
+            {films.map((film, idx) => {
+              const screenings = selectedDateStr
+                ? dateScreenings?.[film.id] || []
+                : homeScreenings?.[film.id] || [];
+              return (
+                <FilmCard
+                  key={film.id}
+                  film={film}
+                  priority={idx < 4}
+                  selectedDate={selectedDate}
+                  screenings={screenings}
+                  hasSelectedDate={!!selectedDateStr}
+                />
+              );
+            })}
           </div>
         ) : (
           <div className="py-16 text-center">
@@ -193,50 +234,17 @@ function formatShortDate(dateStr: string) {
 function FilmCard({
   film,
   priority,
-  index,
   selectedDate,
+  screenings,
+  hasSelectedDate,
 }: {
   film: Film;
   priority?: boolean;
-  index: number;
   selectedDate?: Date | null;
+  screenings: Screening[];
+  hasSelectedDate: boolean;
 }) {
   const posterUrl = film.poster_url || null;
-  const cardRef = useRef<HTMLElement | null>(null);
-  const [isInView, setIsInView] = useState(false);
-
-  useEffect(() => {
-    if (isInView) return;
-    if (!cardRef.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setIsInView(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: '200px 0px' }
-    );
-
-    observer.observe(cardRef.current);
-    return () => observer.disconnect();
-  }, [isInView]);
-
-  const shouldFetchScreenings = priority || !!selectedDate || index < 6 || isInView;
-
-  // Fetch upcoming screenings for this film
-  const { data: screenings } = useQuery({
-    queryKey: ['film-screenings-home', film.id],
-    queryFn: async () => {
-      const res = await filmsApi.getScreenings(film.id);
-      return (res.data || []) as Screening[];
-    },
-    enabled: shouldFetchScreenings,
-    staleTime: 60_000,
-    refetchOnWindowFocus: false,
-  });
-
   const upcomingScreenings = (screenings || []).slice(0, 20);
 
   // Group screenings by date
@@ -263,7 +271,7 @@ function FilmCard({
   }
 
   return (
-    <article ref={cardRef} className="fh-film-card h-full flex flex-col">
+    <article className="fh-film-card h-full flex flex-col">
       <div className="flex flex-1">
         <Link href={`/film/${film.slug}`}
           className="group relative w-[140px] sm:w-[260px] lg:w-[300px] shrink-0 overflow-hidden bg-white/30">
@@ -338,7 +346,7 @@ function FilmCard({
               )}
               {screeningDates.length === 0 && (
                 <span className="text-xs text-text-secondary italic">
-                  {shouldFetchScreenings ? 'Coming soon' : 'View showtimes'}
+                  {hasSelectedDate ? 'Coming soon' : 'View showtimes'}
                 </span>
               )}
             </>

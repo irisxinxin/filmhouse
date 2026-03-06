@@ -38,8 +38,8 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			if strings.HasSuffix(origin, ".vercel.app") {
 				return true
 			}
-			// Allow filmhousesg.xyz domain (with or without www)
-			if origin == "https://filmhousesg.xyz" || origin == "https://www.filmhousesg.xyz" {
+			// Allow filmhouse.online domain (with or without www)
+			if origin == "https://filmhouse.online" || origin == "https://www.filmhouse.online" {
 				return true
 			}
 			// Check if origin is in allowed list
@@ -111,6 +111,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		screenings := api.Group("/screenings")
 		{
 			screenings.GET("", screeningHandler.List)
+			screenings.GET("/home", screeningHandler.HomeList)
 			screenings.GET("/date/:date", screeningHandler.GetByDate)
 		}
 		// Separate route for single screening to avoid conflict

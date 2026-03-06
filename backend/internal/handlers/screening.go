@@ -122,6 +122,52 @@ func (h *ScreeningHandler) GetByDate(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+// HomeList returns a lightweight map of upcoming screenings grouped by film
+func (h *ScreeningHandler) HomeList(c *gin.Context) {
+	days := 30
+	limit := 3
+
+	if v := c.Query("days"); v != "" {
+		if parsed, err := strconv.Atoi(v); err == nil && parsed > 0 {
+			days = parsed
+		}
+	}
+	if v := c.Query("limit"); v != "" {
+		if parsed, err := strconv.Atoi(v); err == nil && parsed > 0 {
+			limit = parsed
+		}
+	}
+
+	endTime := time.Now().Add(time.Duration(days) * 24 * time.Hour)
+
+	type homeScreening struct {
+		ID        uint      `json:"id"`
+		FilmID    uint      `json:"film_id"`
+		StartTime time.Time `json:"start_time"`
+	}
+
+	var screenings []homeScreening
+	if err := h.db.Model(&models.Screening{}).
+		Select("id, film_id, start_time").
+		Where("is_active = ? AND start_time > ? AND start_time < ?", true, time.Now(), endTime).
+		Order("start_time ASC").
+		Find(&screenings).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch screenings"})
+		return
+	}
+
+	result := make(map[uint][]homeScreening)
+	for _, s := range screenings {
+		if len(result[s.FilmID]) >= limit {
+			continue
+		}
+		result[s.FilmID] = append(result[s.FilmID], s)
+	}
+
+	setPublicCache(c, 60)
+	c.JSON(http.StatusOK, result)
+}
+
 // Admin handlers
 
 func (h *ScreeningHandler) Create(c *gin.Context) {

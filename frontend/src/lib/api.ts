@@ -74,6 +74,8 @@ export const filmsApi = {
 export const screeningsApi = {
   list: (params?: { date?: string; film_id?: number }) =>
     api.get('/screenings', { params }),
+  getHome: (params?: { days?: number; limit?: number }) =>
+    api.get('/screenings/home', { params }),
   get: (id: number) => api.get(`/screening/${id}`),
   getByDate: (date: string) => api.get(`/screenings/date/${date}`),
   getSeats: (screeningId: number) => api.get(`/screening/${screeningId}/seats`),
