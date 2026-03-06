@@ -522,6 +522,14 @@ body {
     flex-shrink: 0;
   }
 
+  .fh-detail-screenings-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 10px;
+    font-family: var(--font-display);
+  }
+
   @media (max-width: 1024px) {
     .fh-detail-layout {
       gap: 20px;
@@ -551,6 +559,18 @@ body {
     .fh-detail-screenings {
       width: 100%;
       margin-top: 6px;
+      background: #f6efe8;
+      border: 1px solid #e1d6cc;
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .fh-detail-daterow {
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e1d6cc;
+    }
+    .fh-detail-daterow:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
     }
     .fh-detail-meta {
       font-size: 14px;
@@ -567,6 +587,10 @@ body {
     .fh-detail-awards {
       text-align: left;
       font-size: 13px;
+    }
+    .fh-pill-solid {
+      font-size: 0.9rem;
+      padding: 7px 9px;
     }
   }
 
