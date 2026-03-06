@@ -45,6 +45,7 @@ func (h *ScreeningHandler) List(c *gin.Context) {
 		return
 	}
 
+	setPublicCache(c, 60)
 	c.JSON(http.StatusOK, screenings)
 }
 
@@ -60,6 +61,7 @@ func (h *ScreeningHandler) Get(c *gin.Context) {
 		return
 	}
 
+	setPublicCache(c, 60)
 	c.JSON(http.StatusOK, screening)
 }
 
@@ -116,6 +118,7 @@ func (h *ScreeningHandler) GetByDate(c *gin.Context) {
 		result = append(result, fs)
 	}
 
+	setPublicCache(c, 60)
 	c.JSON(http.StatusOK, result)
 }
 

@@ -49,6 +49,7 @@ func (h *FilmHandler) List(c *gin.Context) {
 		return
 	}
 
+	setPublicCache(c, 60)
 	c.JSON(http.StatusOK, films)
 }
 
@@ -61,6 +62,7 @@ func (h *FilmHandler) Featured(c *gin.Context) {
 		return
 	}
 
+	setPublicCache(c, 120)
 	c.JSON(http.StatusOK, films)
 }
 
@@ -83,6 +85,7 @@ func (h *FilmHandler) Get(c *gin.Context) {
 		return
 	}
 
+	setPublicCache(c, 120)
 	c.JSON(http.StatusOK, film)
 }
 
@@ -110,6 +113,7 @@ func (h *FilmHandler) GetScreenings(c *gin.Context) {
 		return
 	}
 
+	setPublicCache(c, 60)
 	c.JSON(http.StatusOK, screenings)
 }
 
