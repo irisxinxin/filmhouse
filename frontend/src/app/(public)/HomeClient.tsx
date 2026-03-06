@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { filmsApi, programsApi } from '@/lib/api';
@@ -202,7 +202,28 @@ function FilmCard({
   selectedDate?: Date | null;
 }) {
   const posterUrl = film.poster_url || null;
-  const shouldFetchScreenings = priority || !!selectedDate || index < 6;
+  const cardRef = useRef<HTMLElement | null>(null);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    if (isInView) return;
+    if (!cardRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px 0px' }
+    );
+
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, [isInView]);
+
+  const shouldFetchScreenings = priority || !!selectedDate || index < 6 || isInView;
 
   // Fetch upcoming screenings for this film
   const { data: screenings } = useQuery({
@@ -242,7 +263,7 @@ function FilmCard({
   }
 
   return (
-    <article className="fh-film-card h-full flex flex-col">
+    <article ref={cardRef} className="fh-film-card h-full flex flex-col">
       <div className="flex flex-1">
         <Link href={`/film/${film.slug}`}
           className="group relative w-[140px] sm:w-[260px] lg:w-[300px] shrink-0 overflow-hidden bg-white/30">
